@@ -9,6 +9,7 @@
     "scripts": {
         "build": "tsc",
         "ci:build": "npm run build",
+        "toc": "doctoc README.md",
         "watch": "tsc --watch",
         "clean": "rimraf build/ *.tsbuildinfo",
         "prepack": "npm run clean && npm run build",
@@ -34,15 +35,18 @@
     "license": "MIT",
     "dependencies": {
         "colors": "1.4.0",
-        "looks-same": "8.2.1"
+        "lodash": "^4.17.21",
+        "looks-same": "8.2.3"
     },
     "devDependencies": {
         "@playwright/test": "1.36.1",
         "@types/jest": "29.5.1",
         "@types/jest-when": "3.5.2",
+        "@types/lodash": "^4.14.199",
         "@types/node": "16",
         "@typescript-eslint/eslint-plugin": "5.59.7",
         "@typescript-eslint/parser": "5.59.6",
+        "doctoc": "^2.2.1",
         "eslint": "8.40.0",
         "eslint-config-gemini-testing": "3.0.0",
         "jest": "29.5.0",
