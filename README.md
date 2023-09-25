@@ -9,9 +9,15 @@ npm install --save-dev @gemini-testing/playwright-utils
 ```
 
 ## Contents
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 - [Fixtures](#fixtures)
 - [Matchers](#matchers)
-  - [toMatchScreenshot](#tomatchscreenshot)
+  - [ToMatchScreenshot](#tomatchscreenshot)
+    - [Usage](#usage)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Fixtures
 

@@ -9,6 +9,7 @@
     "scripts": {
         "build": "tsc",
         "ci:build": "npm run build",
+        "toc": "doctoc README.md",
         "watch": "tsc --watch",
         "clean": "rimraf build/ *.tsbuildinfo",
         "prepack": "npm run clean && npm run build",
