@@ -34,7 +34,7 @@
     "license": "MIT",
     "dependencies": {
         "colors": "1.4.0",
-        "looks-same": "8.2.1"
+        "looks-same": "8.2.3"
     },
     "devDependencies": {
         "@playwright/test": "1.36.1",
