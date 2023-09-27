@@ -12,18 +12,14 @@ npm install --save-dev @gemini-testing/playwright-utils
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Fixtures](#fixtures)
 - [Matchers](#matchers)
   - [ToMatchScreenshot](#tomatchscreenshot)
     - [Usage](#usage)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Fixtures
-
 ## Matchers
 - [toMatchScreenshot](#tomatchscreenshot)
-
 
 ### ToMatchScreenshot
 
@@ -35,33 +31,34 @@ Setup:
 
 ```typescript
 // playwright.ts
-import { test, expect } from "@playwright/test";
-import { createToMatchScreenshot } from "@gemini-testing/playwright-utils";
+import { test as base, expect } from "@playwright/test";
+import { createMatchersCombinedFixture } from "@gemini-testing/playwright-utils";
 
-const toMatchScreenshot = createToMatchScreenshot(test, {
-    // Default project config
-    tolerance: 2.3,
-    antialiasingTolerance: 4,
-    animations: "disabled",
-    caret: "hide",
-});
-
-expect.extend({toMatchScreenshot});
+const test = base.extend(createMatchersCombinedFixture(expect));
 
 export { test, expect };
 ```
 
 ```typescript
-// global.d.ts
-import type { PwtUtilsMatchers } from "@gemini-testing/playwright-utils";
+// playwright.config.ts
+import { defineConfig, type PlaywrightTestOptions } from '@playwright/test';
+import type { PlaywrightUtilsOptions } from "@gemini-testing/playwright-utils";
 
-export {};
 
-declare global {
- namespace PlaywrightTest {
-    interface Matchers<R, T> extends PwtUtilsMatchers<R,T, "toMatchScreenshot"> {}
+export default defineConfig<PlaywrightTestOptions, PlaywrightUtilsOptions>({
+  // ...
+  use: {
+    // ...
+    toMatchScreenshotOptions: {
+      // Default project config
+      tolerance: 2.3,
+      antialiasingTolerance: 4,
+      animations: "disabled",
+      caret: "hide",
+      timeout: 30000
+    }
   }
-}
+});
 ```
 
 Usage:

@@ -22,9 +22,8 @@ export async function toMatchScreenshotWrapped(
     locator: Locator,
     snapshotName: string,
     opts: PreparedOptions,
-    test: { info: () => TestInfo },
+    testInfo: TestInfo,
 ): Promise<MatcherResult> {
-    const testInfo = test.info();
     const isUpdateSnapshotsMissing = testInfo.config.updateSnapshots === "missing";
     const willBeRetried = testInfo.retry < testInfo.project.retries;
     const updateSnapshots = isUpdateSnapshotsMissing && willBeRetried ? "none" : testInfo.config.updateSnapshots;

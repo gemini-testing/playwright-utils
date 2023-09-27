@@ -1,9 +1,13 @@
+import _ from "lodash";
 import type { LooksSameOptions } from "looks-same";
 import type { PageScreenshotOptions as ScreenshotOpts } from "@playwright/test";
 
 type IgnoreDiffPixels = { maxDiffPixelRatio: number; maxDiffPixels: number };
 
-export type UserScreenshotOptions = Pick<ScreenshotOpts, "animations" | "caret" | "mask" | "maskColor">;
+export type UserScreenshotOptions = Pick<
+    ScreenshotOpts,
+    "animations" | "caret" | "mask" | "maskColor" | "scale" | "timeout" | "fullPage"
+>;
 export type UserCompareOptions = Pick<LooksSameOptions, "tolerance" | "antialiasingTolerance"> & IgnoreDiffPixels;
 
 type LooksSameCompareOptions = LooksSameOptions & { createDiffImage: true };
@@ -26,6 +30,9 @@ export const defaultOptions: Options = {
     animations: "disabled",
     caret: "hide",
     maskColor: "#000000",
+    scale: "css",
+    timeout: 30000,
+    fullPage: false,
 };
 
 export const getOptions = (
@@ -40,11 +47,30 @@ export const getOptions = (
         "maxDiffPixelRatio",
     ];
 
-    const userCompareOpts = userCompareOptionNames.reduce((acc, optionName) => {
-        acc[optionName] = userOptions[optionName] ?? projectOptions[optionName] ?? defaultOptions[optionName]!;
+    const userScreenshotOptionNames: Array<keyof UserScreenshotOptions> = [
+        "animations",
+        "caret",
+        "maskColor",
+        "scale",
+        "timeout",
+        "fullPage",
+    ];
 
-        return acc;
+    const userCompareOpts = userCompareOptionNames.reduce((acc, optionName) => {
+        return _.set(
+            acc,
+            optionName,
+            userOptions[optionName] ?? projectOptions[optionName] ?? defaultOptions[optionName],
+        );
     }, {} as UserCompareOptions);
+
+    const userScreenshotOptions = userScreenshotOptionNames.reduce((acc, optionName) => {
+        return _.set(
+            acc,
+            optionName,
+            userOptions[optionName] ?? projectOptions[optionName] ?? defaultOptions[optionName],
+        );
+    }, {} as UserScreenshotOptions);
 
     const compareOpts: CompareOpts = {
         ...userCompareOpts,
@@ -54,9 +80,7 @@ export const getOptions = (
     };
 
     const screenshotOpts: ScreenshotOpts = {
-        animations: userOptions.animations ?? projectOptions.animations ?? defaultOptions.animations,
-        caret: userOptions.caret ?? projectOptions.caret ?? defaultOptions.caret,
-        maskColor: userOptions.maskColor ?? projectOptions.maskColor ?? defaultOptions.maskColor,
+        ...userScreenshotOptions,
         mask: userOptions.mask,
     };
 

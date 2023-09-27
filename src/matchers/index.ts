@@ -1,10 +1,15 @@
-import type { Locator } from "@playwright/test";
-import type { ToMatchScreenshotMatcher } from "./to-match-screenshot";
+import type { Expect, Fixtures, Locator } from "@playwright/test";
+import { createToMatchScreenshotFixture } from "./to-match-screenshot";
+import type { ToMatchScreenshotMatcher, ToMatchScreenshotOptions } from "./to-match-screenshot";
 
-export * from "./to-match-screenshot";
+type ExpectLike = { [K in keyof Expect]: unknown };
+type LocatorLike = { [K in keyof Locator]: unknown };
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-type LocatorLike = { [K in keyof Locator]: Function };
+export const createMatchersCombinedFixture = (expect: ExpectLike): Fixtures => ({
+    ...createToMatchScreenshotFixture(expect as Expect),
+});
+
+export type PlaywrightUtilsOptions = ToMatchScreenshotOptions;
 
 interface LocatorMatchers<R> {
     toMatchScreenshot: ToMatchScreenshotMatcher<R>;
@@ -14,9 +19,10 @@ type LocatorMatchersResolved<R, T> = {
     [K in keyof LocatorMatchers<R>]: T extends LocatorLike ? LocatorMatchers<R>[K] : never;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface CustomMatchers<R, T> extends LocatorMatchersResolved<R, T> {}
-
-type CustomAssertionName = keyof CustomMatchers<void, void>;
-
-export type PwtUtilsMatchers<R, T, K extends CustomAssertionName> = Pick<CustomMatchers<R, T>, K>;
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace PlaywrightTest {
+        // eslint-disable-next-line
+        interface Matchers<R, T> extends LocatorMatchersResolved<R, T> {}
+    }
+}

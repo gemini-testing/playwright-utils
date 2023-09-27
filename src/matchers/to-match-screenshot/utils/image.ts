@@ -53,19 +53,34 @@ const createImageFileName = ({
 const getScreenshotPath = ({ outputDir, fullTitle, snapshotName, suffix }: ScreenshotPathArgs): string =>
     path.join(outputDir, createImageFileName({ fullTitle, snapshotName, suffix }));
 
-const getTestFullTitle = (testInfo: TestInfo) => testInfo.titlePath.slice(1).join(" ");
+const getTestFullTitle = (testInfo: TestInfo): string => testInfo.titlePath.slice(1).join(" ");
 
 export const getScreenshotSnapshotPath = (testInfo: TestInfo, snapshotName: string): string =>
-    testInfo.snapshotPath(createImageFileName({snapshotName}));
+    testInfo.snapshotPath(createImageFileName({ snapshotName }));
 
 export const getScreenshotActualPath = (testInfo: TestInfo, snapshotName: string): string =>
-    getScreenshotPath({ outputDir: testInfo.outputDir, fullTitle: getTestFullTitle(testInfo), snapshotName, suffix: "actual" });
+    getScreenshotPath({
+        outputDir: testInfo.outputDir,
+        fullTitle: getTestFullTitle(testInfo),
+        snapshotName,
+        suffix: "actual",
+    });
 
 export const getScreenshotExpectedPath = (testInfo: TestInfo, snapshotName: string): string =>
-    getScreenshotPath({ outputDir: testInfo.outputDir, fullTitle: getTestFullTitle(testInfo), snapshotName, suffix: "expected" });
+    getScreenshotPath({
+        outputDir: testInfo.outputDir,
+        fullTitle: getTestFullTitle(testInfo),
+        snapshotName,
+        suffix: "expected",
+    });
 
 export const getScreenshotDiffPath = (testInfo: TestInfo, snapshotName: string): string =>
-    getScreenshotPath({ outputDir: testInfo.outputDir, fullTitle: getTestFullTitle(testInfo), snapshotName, suffix: "diff" });
+    getScreenshotPath({
+        outputDir: testInfo.outputDir,
+        fullTitle: getTestFullTitle(testInfo),
+        snapshotName,
+        suffix: "diff",
+    });
 
 export default {
     createActualAttachment,
