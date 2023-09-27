@@ -1,24 +1,24 @@
-import type { Expect, Fixtures, Locator, TestFixture, TestInfo } from "@playwright/test";
+import type { Expect, Fixtures, Locator, Page, TestFixture, TestInfo } from "@playwright/test";
 import { toMatchScreenshotWrapped } from "./toMatchScreenshotWrapped";
 import { defaultOptions, getOptions, type Options } from "./options";
 import type { MatcherResult, ExpectThis } from "./types";
 
 type ToMatchScreenshot = (
     this: ExpectThis,
-    locator: Locator,
+    target: Page | Locator,
     snapshotName: string,
     userOptions?: Partial<Options>,
 ) => Promise<MatcherResult>;
 
 export const createToMatchScreenshot = (testInfo: TestInfo, projectOptions?: Partial<Options>): ToMatchScreenshot => {
-    return function toMatchScreenshot(locator, snapshotName, userOptions) {
+    return function toMatchScreenshot(target, snapshotName, userOptions) {
         if (typeof snapshotName !== "string") {
             return Promise.resolve({ pass: false, message: () => "A snapshot name is required" });
         }
 
         const options = getOptions(userOptions, projectOptions, defaultOptions);
 
-        return toMatchScreenshotWrapped.call(this, locator, snapshotName, options, testInfo);
+        return toMatchScreenshotWrapped.call(this, target, snapshotName, options, testInfo);
     };
 };
 

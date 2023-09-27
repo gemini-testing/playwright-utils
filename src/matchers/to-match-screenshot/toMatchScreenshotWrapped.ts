@@ -1,5 +1,5 @@
 import looksSame from "looks-same";
-import type { Locator, TestInfo } from "@playwright/test";
+import type { Locator, Page, TestInfo } from "@playwright/test";
 import type { ExpectThis, MatcherResult } from "./types";
 import handlers from "./handlers";
 import fsUtils from "./utils/fs";
@@ -19,7 +19,7 @@ const areSame = (
 
 export async function toMatchScreenshotWrapped(
     this: ExpectThis,
-    locator: Locator,
+    target: Page | Locator,
     snapshotName: string,
     opts: PreparedOptions,
     testInfo: TestInfo,
@@ -42,7 +42,7 @@ export async function toMatchScreenshotWrapped(
             return handlers.handleMissingNegated({ updateSnapshots, snapshotPath });
         }
 
-        const actual = await locator.screenshot(screenshotOpts);
+        const actual = await target.screenshot(screenshotOpts);
         const looksSameResult = await looksSame(actual, snapshotPath, looksSameOpts);
 
         return areSame(looksSameResult, maxDiffPixels, maxDiffPixelRatio)
@@ -55,7 +55,7 @@ export async function toMatchScreenshotWrapped(
     }
 
     if (!hasSnapshot) {
-        const actualBuffer = await locator.screenshot(screenshotOpts);
+        const actualBuffer = await target.screenshot(screenshotOpts);
 
         return handlers.handleMissing({
             updateSnapshots,
@@ -67,7 +67,7 @@ export async function toMatchScreenshotWrapped(
         });
     }
 
-    const actualBuffer = await locator.screenshot(screenshotOpts);
+    const actualBuffer = await target.screenshot(screenshotOpts);
     const expectedBuffer = await fsUtils.readFile(snapshotPath);
     const looksSameResult = await looksSame(actualBuffer, expectedBuffer, compareOpts);
 
