@@ -25,17 +25,14 @@ export async function toMatchScreenshotWrapped(
     test: { info: () => TestInfo },
 ): Promise<MatcherResult> {
     const testInfo = test.info();
-    const suitePath = testInfo.titlePath.slice(1);
-    const fullTitle = suitePath.join(" ");
-
     const isUpdateSnapshotsMissing = testInfo.config.updateSnapshots === "missing";
     const willBeRetried = testInfo.retry < testInfo.project.retries;
     const updateSnapshots = isUpdateSnapshotsMissing && willBeRetried ? "none" : testInfo.config.updateSnapshots;
 
-    const snapshotPath = getScreenshotSnapshotPath(testInfo, fullTitle, snapshotName);
-    const actualPath = getScreenshotActualPath(testInfo, fullTitle, snapshotName);
-    const expectedPath = getScreenshotExpectedPath(testInfo, fullTitle, snapshotName);
-    const diffPath = getScreenshotDiffPath(testInfo, fullTitle, snapshotName);
+    const snapshotPath = getScreenshotSnapshotPath(testInfo, snapshotName);
+    const actualPath = getScreenshotActualPath(testInfo, snapshotName);
+    const expectedPath = getScreenshotExpectedPath(testInfo, snapshotName);
+    const diffPath = getScreenshotDiffPath(testInfo, snapshotName);
 
     const { screenshotOpts, compareOpts } = opts;
     const { maxDiffPixels, maxDiffPixelRatio, ...looksSameOpts } = compareOpts;
