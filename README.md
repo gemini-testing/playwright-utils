@@ -46,18 +46,18 @@ import type { PlaywrightUtilsOptions } from "@gemini-testing/playwright-utils";
 
 
 export default defineConfig<PlaywrightTestOptions, PlaywrightUtilsOptions>({
-  // ...
-  use: {
     // ...
-    toMatchScreenshotOptions: {
-      // Default project config
-      tolerance: 2.3,
-      antialiasingTolerance: 4,
-      animations: "disabled",
-      caret: "hide",
-      timeout: 30000
+    use: {
+        // ...
+        toMatchScreenshotOptions: {
+            // Default project config
+            tolerance: 2.3,
+            antialiasingTolerance: 4,
+            animations: "disabled",
+            caret: "hide",
+            timeout: 30000
+        }
     }
-  }
 });
 ```
 
@@ -65,17 +65,23 @@ Usage:
 
 ```typescript
 await expect(page.locator('body')).toMatchScreenshot('plain', {
-    // Comparison config, optional
+    // Comparison config, have higher priority than project config, optional
+    maxDiffPixels: 3
 });
 ```
 
 Args:
-- stateName: `string`
+- snapshotName: `string`
 - opts?: `Object`
   - [tolerance][looks-same-tolerance]: `number`
   - [antialiasingTolerance][looks-same-antialiasing-tolerance]: `number`
+  - [maxDiffPixels][pwt-max-diff-pixels]: `number`
+  - [maxDiffPixelRatio][pwt-max-diff-pixels-ratio]: `number`
   - [animations][pwt-animations]: `"disabled" | "allow"`
   - [caret][pwt-caret]: `"hide" | "initial"`
+  - [scale][pwt-scale]: `"css" | "device"`
+  - [fullPage][pwt-full-page]: `boolean`
+  - timeout: `number`
 
 [pwt]: https://playwright.dev/
 [looks-same]: https://github.com/gemini-testing/looks-same
@@ -83,5 +89,9 @@ Args:
 [yiq-ntsc]: http://www.progmat.uaem.mx:8080/artVol2Num2/Articulo3Vol2Num2.pdf
 [looks-same-tolerance]: https://github.com/gemini-testing/looks-same#comparing-images
 [looks-same-antialiasing-tolerance]: https://github.com/gemini-testing/looks-same#comparing-images-with-ignoring-antialiasing
+[pwt-max-diff-pixels]: https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1-option-max-diff-pixels
+[pwt-max-diff-pixels-ratio]: https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1-option-max-diff-pixel-ratio
 [pwt-animations]: https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1-option-animations
 [pwt-caret]: https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1-option-caret
+[pwt-scale]: https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1-option-scale
+[pwt-full-page]: https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1-option-full-page

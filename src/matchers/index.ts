@@ -24,12 +24,12 @@ type PageOrLocatorMatchersResolved<R, T> = {
     [K in keyof LocatorMatchers<R>]: T extends PageLike | LocatorLike ? PageOrLocatorMatchers<R>[K] : never;
 };
 
-type CustomMatchers<R, T> = PageOrLocatorMatchersResolved<R,T>;
+type CustomMatchers<R, T> = PageOrLocatorMatchersResolved<R, T>;
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace PlaywrightTest {
         // eslint-disable-next-line
-        interface Matchers<R, T> extends CustomMatchers<R,T> {}
+        interface Matchers<R, T> extends CustomMatchers<R, T> {}
     }
 }
