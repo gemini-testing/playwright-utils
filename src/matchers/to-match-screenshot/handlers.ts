@@ -3,6 +3,10 @@ import type { TestInfo } from "@playwright/test";
 import type { MatcherResult } from "./types";
 import fsUtils from "./utils/fs";
 import { createActualAttachment, createDiffAttachment, createExpectedAttachment } from "./utils/image";
+import { createLogger } from "../../utils/logger";
+import type { WeakErrors } from "../../fixtures";
+
+const logger = createLogger("to-match-screenshot");
 
 type UpdateSnapshotsMode = "none" | "all" | "missing";
 
@@ -14,6 +18,7 @@ type HandleMissingNegatedArgs = {
 type HandleMissingArgs = {
     updateSnapshots: UpdateSnapshotsMode;
     testInfo: TestInfo;
+    weakErrors: WeakErrors;
     snapshotName: string;
     snapshotPath: string;
     actualPath: string;
@@ -70,6 +75,7 @@ export const handleNotExists = ({ snapshotPath }: { snapshotPath: string }): Mat
 export const handleMissing = async ({
     updateSnapshots,
     testInfo,
+    weakErrors,
     snapshotName,
     snapshotPath,
     actualPath,
@@ -85,9 +91,14 @@ export const handleMissing = async ({
 
     const message = `A snapshot doesn't exist at ${snapshotPath}${isWriteMode ? ", writing actual." : "."}`;
 
-    if (isWriteMode) {
-        console.log(message);
+    if (updateSnapshots === "all") {
+        logger.log(message);
         return { pass: true, message: () => message };
+    }
+
+    if (updateSnapshots === "missing") {
+        weakErrors.addError(new Error(message));
+        return { pass: true, message: () => "" };
     }
 
     return { pass: false, message: () => message };
@@ -100,7 +111,7 @@ export const handleUpdating = async ({
 }: HandleUpdatingArgs): Promise<MatcherResult> => {
     await Promise.all([fsUtils.writeFile(snapshotPath, actualBuffer), fsUtils.writeFile(actualPath, actualBuffer)]);
 
-    console.log(snapshotPath + " is re-generated, writing actual.");
+    logger.log(snapshotPath + " is re-generated, writing actual.");
     return {
         pass: true,
         message: () => snapshotPath + " running with --update-snapshots, writing actual.",

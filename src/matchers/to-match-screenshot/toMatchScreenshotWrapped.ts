@@ -1,6 +1,7 @@
 import looksSame from "looks-same";
 import type { Locator, Page, TestInfo } from "@playwright/test";
 import type { ExpectThis, MatcherResult } from "./types";
+import type { WeakErrors } from "../../fixtures";
 import handlers from "./handlers";
 import fsUtils from "./utils/fs";
 import { PreparedOptions } from "./options";
@@ -11,6 +12,14 @@ import {
     getScreenshotDiffPath,
 } from "./utils/image";
 
+type ToMatchScreenshotWrappedArgs = {
+    target: Page | Locator;
+    snapshotName: string;
+    opts: PreparedOptions;
+    testInfo: TestInfo;
+    weakErrors: WeakErrors;
+};
+
 const areSame = (
     { equal, differentPixels, totalPixels }: { equal: boolean; differentPixels: number; totalPixels: number },
     maxDiffPixels: number,
@@ -19,10 +28,7 @@ const areSame = (
 
 export async function toMatchScreenshotWrapped(
     this: ExpectThis,
-    target: Page | Locator,
-    snapshotName: string,
-    opts: PreparedOptions,
-    testInfo: TestInfo,
+    { target, snapshotName, opts, testInfo, weakErrors }: ToMatchScreenshotWrappedArgs,
 ): Promise<MatcherResult> {
     const isUpdateSnapshotsMissing = testInfo.config.updateSnapshots === "missing";
     const willBeRetried = testInfo.retry < testInfo.project.retries;
@@ -60,6 +66,7 @@ export async function toMatchScreenshotWrapped(
         return handlers.handleMissing({
             updateSnapshots,
             testInfo,
+            weakErrors,
             snapshotName,
             snapshotPath,
             actualPath,

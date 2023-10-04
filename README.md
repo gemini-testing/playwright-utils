@@ -96,8 +96,6 @@ Args:
 - If you have `toHaveScreenshot` calls without specified `name`, it is required to name them.
 - Move contents of your `toHaveScreenshot` options from `expect` section of playwright config to `toMatchScreenshot` at `use` section of playwright config, then remove `threshold` property (`toMatchScreenshot` uses `tolerance` instead. Preferred value is 2.3).
 
-*Note*: `toMatchScreenshot` won't fail the test if there is no reference and `updateSnapshots` mode is `missing`
-
 [pwt]: https://playwright.dev/
 [looks-same]: https://github.com/gemini-testing/looks-same
 [ciede2000]: https://en.wikipedia.org/wiki/Color_difference#CIEDE2000

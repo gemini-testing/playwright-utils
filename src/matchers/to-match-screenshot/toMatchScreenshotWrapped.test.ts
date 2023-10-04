@@ -2,6 +2,7 @@ import { when } from "jest-when";
 import type { Locator, TestInfo } from "@playwright/test";
 import type { PreparedOptions } from "./options";
 import type { MatcherResult } from "./types";
+import type { WeakErrors } from "../../fixtures";
 import { toMatchScreenshotWrapped } from "./toMatchScreenshotWrapped";
 
 import looksSame from "looks-same";
@@ -41,10 +42,13 @@ describe("toMatchScreenshotWrapped", () => {
         ): Promise<MatcherResult> | MatcherResult => {
             return toMatchScreenshotWrapped.call(
                 { isNot },
-                locator,
-                snapshotName,
-                { compareOpts: {} } as PreparedOptions,
-                { ...defaultTestInfo, ...testInfo },
+                {
+                    target: locator,
+                    snapshotName,
+                    opts: { compareOpts: {} } as PreparedOptions,
+                    testInfo: { ...defaultTestInfo, ...testInfo },
+                    weakErrors: {} as WeakErrors,
+                },
             );
         };
     });
@@ -108,6 +112,7 @@ describe("toMatchScreenshotWrapped", () => {
         expect(handlers.handleMissing).toBeCalledWith({
             updateSnapshots: "missing",
             testInfo: expect.objectContaining(testInfo),
+            weakErrors: expect.anything(),
             snapshotName: "snapshot",
             snapshotPath: "snapshot-path",
             actualPath: "actual-path",
