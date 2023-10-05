@@ -12,6 +12,7 @@ describe("getOptions", () => {
             antialiasingTolerance: 4,
             maxDiffPixels: 0,
             maxDiffPixelRatio: 0,
+            stopOnImageDiff: true,
         };
         screenshotOpts = {
             animations: "disabled",

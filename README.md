@@ -44,7 +44,7 @@ export { test, expect };
 
 ```typescript
 // playwright.config.ts
-import { defineConfig, type PlaywrightTestOptions } from '@playwright/test';
+import { defineConfig, type PlaywrightTestOptions } from "@playwright/test";
 import type { PlaywrightUtilsOptions } from "@gemini-testing/playwright-utils";
 
 export default defineConfig<PlaywrightTestOptions, PlaywrightUtilsOptions>({
@@ -57,6 +57,7 @@ export default defineConfig<PlaywrightTestOptions, PlaywrightUtilsOptions>({
             antialiasingTolerance: 4,
             maxDiffPixels: 0,
             maxDiffPixelRatio: 0,
+            stopOnImageDiff: true,
             animations: "disabled",
             caret: "hide",
             maskColor: "#FF00FF",
@@ -71,7 +72,7 @@ export default defineConfig<PlaywrightTestOptions, PlaywrightUtilsOptions>({
 Usage:
 
 ```typescript
-await expect(page.locator('body')).toMatchScreenshot('plain', {
+await expect(page.locator("body")).toMatchScreenshot("plain", {
     // Comparison options, have higher priority than project options
     maxDiffPixels: 3
 });
@@ -84,6 +85,7 @@ Args:
   - [antialiasingTolerance][looks-same-antialiasing-tolerance]: `number`
   - [maxDiffPixels][pwt-max-diff-pixels]: `number`
   - [maxDiffPixelRatio][pwt-max-diff-pixels-ratio]: `number`
+  - [stopOnImageDiff]: `boolean` - Stop test execution immediately after image comparison error
   - [animations][pwt-animations]: `"disabled" | "allow"`
   - [caret][pwt-caret]: `"hide" | "initial"`
   - [maskColor][pwt-mask-color]: `string`

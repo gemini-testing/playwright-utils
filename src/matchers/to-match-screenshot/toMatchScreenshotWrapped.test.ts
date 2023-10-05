@@ -20,15 +20,18 @@ type ToMatchScreenshotWrapped_ = (
     snapshotName: string,
     opts?: {
         isNot?: boolean;
+        stopOnImageDiff?: boolean;
         testInfo?: Record<string, any>;
     },
 ) => Promise<MatcherResult> | MatcherResult;
 
 describe("toMatchScreenshotWrapped", () => {
-    let locator: Locator, defaultTestInfo: TestInfo, toMatchScreenshotWrapped_: ToMatchScreenshotWrapped_;
+    let locator: Locator, weakErrors: WeakErrors, defaultTestInfo: TestInfo;
+    let toMatchScreenshotWrapped_: ToMatchScreenshotWrapped_;
 
     beforeEach(() => {
         locator = { screenshot: jest.fn().mockResolvedValue("actual-buffer") } as unknown as Locator;
+        weakErrors = { addError: jest.fn() } as unknown as WeakErrors;
         defaultTestInfo = {
             titlePath: ["fileName", "suite", "testName"],
             project: { retries: 0 },
@@ -38,16 +41,16 @@ describe("toMatchScreenshotWrapped", () => {
         toMatchScreenshotWrapped_ = (
             locator: Locator,
             snapshotName = "snapshot",
-            { isNot = false, testInfo = {} } = { isNot: false, testInfo: {} },
+            { isNot = false, stopOnImageDiff = true, testInfo = {} } = { isNot: false, testInfo: {} },
         ): Promise<MatcherResult> | MatcherResult => {
             return toMatchScreenshotWrapped.call(
                 { isNot },
                 {
                     target: locator,
                     snapshotName,
-                    opts: { compareOpts: {} } as PreparedOptions,
+                    opts: { compareOpts: { stopOnImageDiff } } as PreparedOptions,
                     testInfo: { ...defaultTestInfo, ...testInfo },
-                    weakErrors: {} as WeakErrors,
+                    weakErrors,
                 },
             );
         };
@@ -74,7 +77,7 @@ describe("toMatchScreenshotWrapped", () => {
 
         await toMatchScreenshotWrapped_(locator, "snapshot", { isNot: true });
 
-        expect(handlers.handleMatchingNegated).toBeCalled();
+        expect(handlers.handleMatchingNegated).toBeCalledWith({ weakErrors, stopOnImageDiff: true });
     });
 
     it("should handle different negated", async () => {
@@ -165,6 +168,8 @@ describe("toMatchScreenshotWrapped", () => {
 
         expect(handlers.handleDifferent).toBeCalledWith({
             testInfo: expect.objectContaining(testInfo),
+            weakErrors,
+            stopOnImageDiff: true,
             actualBuffer: "actual-buffer",
             expectedBuffer: "expected-buffer",
             diffBuffer: "diff-buffer",

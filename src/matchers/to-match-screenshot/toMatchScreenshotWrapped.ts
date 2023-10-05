@@ -40,7 +40,7 @@ export async function toMatchScreenshotWrapped(
     const diffPath = getScreenshotDiffPath(testInfo, snapshotName);
 
     const { screenshotOpts, compareOpts } = opts;
-    const { maxDiffPixels, maxDiffPixelRatio, ...looksSameOpts } = compareOpts;
+    const { maxDiffPixels, maxDiffPixelRatio, stopOnImageDiff, ...looksSameOpts } = compareOpts;
     const hasSnapshot = await fsUtils.exists(snapshotPath);
 
     if (this.isNot) {
@@ -52,7 +52,7 @@ export async function toMatchScreenshotWrapped(
         const looksSameResult = await looksSame(actual, snapshotPath, looksSameOpts);
 
         return areSame(looksSameResult, maxDiffPixels, maxDiffPixelRatio)
-            ? handlers.handleMatchingNegated()
+            ? handlers.handleMatchingNegated({ weakErrors, stopOnImageDiff })
             : handlers.handleDifferentNegated();
     }
 
@@ -90,6 +90,8 @@ export async function toMatchScreenshotWrapped(
 
     return handlers.handleDifferent({
         testInfo,
+        weakErrors,
+        stopOnImageDiff,
         actualBuffer,
         expectedBuffer,
         diffBuffer,

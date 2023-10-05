@@ -15,6 +15,11 @@ type HandleMissingNegatedArgs = {
     snapshotPath: string;
 };
 
+type HandleMatchingNegatedArgs = {
+    weakErrors: WeakErrors;
+    stopOnImageDiff: boolean;
+};
+
 type HandleMissingArgs = {
     updateSnapshots: UpdateSnapshotsMode;
     testInfo: TestInfo;
@@ -33,6 +38,8 @@ type HandleUpdatingArgs = {
 
 type HandleDifferentArgs = {
     testInfo: TestInfo;
+    weakErrors: WeakErrors;
+    stopOnImageDiff: boolean;
     actualBuffer: Uint8Array;
     expectedBuffer: Uint8Array;
     diffBuffer: Uint8Array;
@@ -55,14 +62,20 @@ export const handleDifferentNegated = (): MatcherResult => {
     return { pass: false, message: () => "" };
 };
 
-export const handleMatchingNegated = (): MatcherResult => {
+export const handleMatchingNegated = ({ stopOnImageDiff, weakErrors }: HandleMatchingNegatedArgs): MatcherResult => {
     const message = [
         colors.red("Screenshot comparison failed:"),
         "",
         "  Expected result should be different from the actual one.",
     ].join("\n");
 
-    return { pass: true, message: () => message };
+    if (stopOnImageDiff) {
+        return { pass: true, message: () => message };
+    }
+
+    weakErrors.addError(new Error(message));
+
+    return { pass: false, message: () => "" };
 };
 
 export const handleNotExists = ({ snapshotPath }: { snapshotPath: string }): MatcherResult => {
@@ -120,6 +133,8 @@ export const handleUpdating = async ({
 
 export const handleDifferent = async ({
     testInfo,
+    weakErrors,
+    stopOnImageDiff,
     actualBuffer,
     expectedBuffer,
     diffBuffer,
@@ -151,7 +166,13 @@ export const handleDifferent = async ({
 
     await Promise.all(writeFilePromises);
 
-    return { pass: false, message: () => output.join("\n") };
+    if (stopOnImageDiff) {
+        return { pass: false, message: () => output.join("\n") };
+    }
+
+    weakErrors.addError(new Error(output.join("\n")));
+
+    return { pass: true, message: () => "" };
 };
 
 export const handleMatching = (): MatcherResult => {
