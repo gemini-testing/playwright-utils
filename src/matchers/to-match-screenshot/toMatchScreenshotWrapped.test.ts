@@ -21,7 +21,7 @@ type ToMatchScreenshotWrapped_ = (
     opts?: {
         isNot?: boolean;
         stopOnImageDiff?: boolean;
-        testInfo?: Record<string, any>;
+        testInfo?: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     },
 ) => Promise<MatcherResult> | MatcherResult;
 
@@ -73,7 +73,7 @@ describe("toMatchScreenshotWrapped", () => {
 
     it("should handle matching negated", async () => {
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(true);
-        jest.mocked(looksSame).mockResolvedValue({ equal: true } as any);
+        jest.mocked(looksSame).mockResolvedValue({ equal: true } as unknown as ReturnType<typeof looksSame>);
 
         await toMatchScreenshotWrapped_(locator, "snapshot", { isNot: true });
 
@@ -82,7 +82,7 @@ describe("toMatchScreenshotWrapped", () => {
 
     it("should handle different negated", async () => {
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(true);
-        jest.mocked(looksSame).mockResolvedValue({ equal: false } as any);
+        jest.mocked(looksSame).mockResolvedValue({ equal: false } as unknown as ReturnType<typeof looksSame>);
 
         await toMatchScreenshotWrapped_(locator, "snapshot", { isNot: true });
 
@@ -125,7 +125,7 @@ describe("toMatchScreenshotWrapped", () => {
 
     it("should handle matching", async () => {
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(true);
-        jest.mocked(looksSame).mockResolvedValue({ equal: true } as any);
+        jest.mocked(looksSame).mockResolvedValue({ equal: true } as unknown as ReturnType<typeof looksSame>);
 
         await toMatchScreenshotWrapped_(locator, "snapshot");
 
@@ -134,7 +134,7 @@ describe("toMatchScreenshotWrapped", () => {
 
     it("should handle updating snapshots", async () => {
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(true);
-        jest.mocked(looksSame).mockResolvedValue({ equal: false } as any);
+        jest.mocked(looksSame).mockResolvedValue({ equal: false } as unknown as ReturnType<typeof looksSame>);
         jest.mocked(imageUtils.getScreenshotSnapshotPath).mockReturnValue("snapshot-path");
         jest.mocked(imageUtils.getScreenshotActualPath).mockReturnValue("actual-path");
 
@@ -159,7 +159,7 @@ describe("toMatchScreenshotWrapped", () => {
             diffImage: {
                 createBuffer: () => Promise.resolve("diff-buffer"),
             },
-        } as any);
+        } as unknown as ReturnType<typeof looksSame>);
         const testInfo = {
             config: { updateSnapshots: "none" },
         };

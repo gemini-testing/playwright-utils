@@ -3,7 +3,7 @@ import colors from "colors";
 import handlers from "./handlers";
 import fsUtils from "./utils/fs";
 import type { WeakErrors } from "../../fixtures";
-import { MatcherResult } from "./types";
+import type { MatcherResult } from "./types";
 
 jest.mock("./utils/fs", () => ({
     addSuffixToFilePath: jest.fn().mockImplementation((path: string, suffix: string) => `${path}-${suffix}`),
