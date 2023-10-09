@@ -18,7 +18,7 @@ export default class WeakErrors {
 
         const offset = Error.name.length + 2;
         const errorMessages = this.errors.map(error => error.message);
-        const errorMessage = errorMessages.join("\n" + " ".repeat(offset));
+        const errorMessage = errorMessages.join("\n\n" + " ".repeat(offset));
 
         const error = new Error(errorMessage);
         error.stack = this.errors[0].stack;

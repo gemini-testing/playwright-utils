@@ -10,10 +10,13 @@ export type UserScreenshotOptions = Pick<
 
 type LooksSameCompareOptions = LooksSameOptions & { createDiffImage: true };
 type IgnoreDiffPixels = { maxDiffPixelRatio: number; maxDiffPixels: number };
-type CompareOpts = LooksSameCompareOptions & IgnoreDiffPixels & { stopOnImageDiff: boolean };
+type CompareOpts = LooksSameCompareOptions & IgnoreDiffPixels & { stopOnFirstImageDiff: boolean };
 
 export type UserCompareOptions = Partial<
-    Pick<CompareOpts, "tolerance" | "antialiasingTolerance" | "maxDiffPixels" | "maxDiffPixelRatio" | "stopOnImageDiff">
+    Pick<
+        CompareOpts,
+        "tolerance" | "antialiasingTolerance" | "maxDiffPixels" | "maxDiffPixelRatio" | "stopOnFirstImageDiff"
+    >
 >;
 
 export type Options = UserScreenshotOptions & UserCompareOptions;
@@ -28,7 +31,7 @@ export const defaultOptions: Options = {
     antialiasingTolerance: 4,
     maxDiffPixels: 0,
     maxDiffPixelRatio: 0,
-    stopOnImageDiff: true,
+    stopOnFirstImageDiff: false,
 
     // Screenshot options
     animations: "disabled",
@@ -49,7 +52,7 @@ export const getOptions = (
         "antialiasingTolerance",
         "maxDiffPixels",
         "maxDiffPixelRatio",
-        "stopOnImageDiff",
+        "stopOnFirstImageDiff",
     ];
 
     const userScreenshotOptionNames: Array<keyof UserScreenshotOptions> = [

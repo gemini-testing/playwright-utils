@@ -49,8 +49,8 @@ describe("handlers", () => {
     });
 
     describe("handleMatchingNegated", () => {
-        it("should pass if stopOnImageDiff is 'true'", () => {
-            const result = handlers.handleMatchingNegated({ weakErrors, stopOnImageDiff: true });
+        it("should pass if stopOnFirstImageDiff is 'true'", () => {
+            const result = handlers.handleMatchingNegated({ weakErrors, stopOnFirstImageDiff: true });
 
             const expectedMessage = [
                 colors.red("Screenshot comparison failed:"),
@@ -62,8 +62,8 @@ describe("handlers", () => {
             expect(result.message()).toBe(expectedMessage);
         });
 
-        it("should fail if stopOnImageDiff is 'false'", () => {
-            const result = handlers.handleMatchingNegated({ weakErrors, stopOnImageDiff: false });
+        it("should fail if stopOnFirstImageDiff is 'false'", () => {
+            const result = handlers.handleMatchingNegated({ weakErrors, stopOnFirstImageDiff: false });
 
             const errorMessage = [
                 colors.red("Screenshot comparison failed:"),
@@ -174,7 +174,7 @@ describe("handlers", () => {
             handlers.handleDifferent({
                 testInfo,
                 weakErrors,
-                stopOnImageDiff: true,
+                stopOnFirstImageDiff: false,
                 actualBuffer: Buffer.from("actual-buffer"),
                 expectedBuffer: Buffer.from("expected-buffer"),
                 diffBuffer: Buffer.from("diff-buffer"),
@@ -186,11 +186,11 @@ describe("handlers", () => {
             });
 
         describe("should save expected/actual/diff images", () => {
-            [true, false].forEach(stopOnImageDiff => {
-                it(`if stopOnImageDiff is '${stopOnImageDiff}'`, async () => {
+            [true, false].forEach(stopOnFirstImageDiff => {
+                it(`if stopOnFirstImageDiff is '${stopOnFirstImageDiff}'`, async () => {
                     await handleDifferent_({
                         weakErrors,
-                        stopOnImageDiff,
+                        stopOnFirstImageDiff,
                         actualBuffer: Buffer.from("actual-buffer"),
                         expectedBuffer: Buffer.from("expected-buffer"),
                         diffBuffer: Buffer.from("diff-buffer"),
@@ -207,8 +207,8 @@ describe("handlers", () => {
             });
         });
 
-        it("should fail if stopOnImageDiff is 'true'", async () => {
-            const result = await handleDifferent_({ stopOnImageDiff: true });
+        it("should fail if stopOnFirstImageDiff is 'true'", async () => {
+            const result = await handleDifferent_({ stopOnFirstImageDiff: true });
 
             const expectedMessage = [
                 colors.red("Screenshot comparison failed"),
@@ -223,8 +223,8 @@ describe("handlers", () => {
             expect(result.message()).toBe(expectedMessage);
         });
 
-        it("should pass if stopOnImageDiff is 'false'", async () => {
-            const result = await handleDifferent_({ stopOnImageDiff: false });
+        it("should pass if stopOnFirstImageDiff is 'false'", async () => {
+            const result = await handleDifferent_({ stopOnFirstImageDiff: false });
 
             const errorMessage = [
                 colors.red("Screenshot comparison failed"),

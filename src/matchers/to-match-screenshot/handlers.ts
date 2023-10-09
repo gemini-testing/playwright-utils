@@ -17,7 +17,7 @@ type HandleMissingNegatedArgs = {
 
 type HandleMatchingNegatedArgs = {
     weakErrors: WeakErrors;
-    stopOnImageDiff: boolean;
+    stopOnFirstImageDiff: boolean;
 };
 
 type HandleMissingArgs = {
@@ -39,7 +39,7 @@ type HandleUpdatingArgs = {
 type HandleDifferentArgs = {
     testInfo: TestInfo;
     weakErrors: WeakErrors;
-    stopOnImageDiff: boolean;
+    stopOnFirstImageDiff: boolean;
     actualBuffer: Uint8Array;
     expectedBuffer: Uint8Array;
     diffBuffer: Uint8Array;
@@ -62,14 +62,17 @@ export const handleDifferentNegated = (): MatcherResult => {
     return { pass: false, message: () => "" };
 };
 
-export const handleMatchingNegated = ({ stopOnImageDiff, weakErrors }: HandleMatchingNegatedArgs): MatcherResult => {
+export const handleMatchingNegated = ({
+    stopOnFirstImageDiff,
+    weakErrors,
+}: HandleMatchingNegatedArgs): MatcherResult => {
     const message = [
         colors.red("Screenshot comparison failed:"),
         "",
         "  Expected result should be different from the actual one.",
     ].join("\n");
 
-    if (stopOnImageDiff) {
+    if (stopOnFirstImageDiff) {
         return { pass: true, message: () => message };
     }
 
@@ -134,7 +137,7 @@ export const handleUpdating = async ({
 export const handleDifferent = async ({
     testInfo,
     weakErrors,
-    stopOnImageDiff,
+    stopOnFirstImageDiff,
     actualBuffer,
     expectedBuffer,
     diffBuffer,
@@ -166,7 +169,7 @@ export const handleDifferent = async ({
 
     await Promise.all(writeFilePromises);
 
-    if (stopOnImageDiff) {
+    if (stopOnFirstImageDiff) {
         return { pass: false, message: () => output.join("\n") };
     }
 

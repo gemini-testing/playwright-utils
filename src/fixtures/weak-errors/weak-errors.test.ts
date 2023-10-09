@@ -37,7 +37,7 @@ describe("WeakErrors", () => {
 
             const combinedError = weakErrors.getError();
 
-            const expectedErrorMessage = ["error 1", "       error 2", "       error 3"].join("\n");
+            const expectedErrorMessage = ["error 1", "       error 2", "       error 3"].join("\n\n");
             expect(combinedError?.message).toBe(expectedErrorMessage);
         });
     });

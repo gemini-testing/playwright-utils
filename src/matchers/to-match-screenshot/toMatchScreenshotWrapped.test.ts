@@ -20,7 +20,7 @@ type ToMatchScreenshotWrapped_ = (
     snapshotName: string,
     opts?: {
         isNot?: boolean;
-        stopOnImageDiff?: boolean;
+        stopOnFirstImageDiff?: boolean;
         testInfo?: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     },
 ) => Promise<MatcherResult> | MatcherResult;
@@ -41,14 +41,14 @@ describe("toMatchScreenshotWrapped", () => {
         toMatchScreenshotWrapped_ = (
             locator: Locator,
             snapshotName = "snapshot",
-            { isNot = false, stopOnImageDiff = true, testInfo = {} } = { isNot: false, testInfo: {} },
+            { isNot = false, stopOnFirstImageDiff = false, testInfo = {} } = { isNot: false, testInfo: {} },
         ): Promise<MatcherResult> | MatcherResult => {
             return toMatchScreenshotWrapped.call(
                 { isNot },
                 {
                     target: locator,
                     snapshotName,
-                    opts: { compareOpts: { stopOnImageDiff } } as PreparedOptions,
+                    opts: { compareOpts: { stopOnFirstImageDiff } } as PreparedOptions,
                     testInfo: { ...defaultTestInfo, ...testInfo },
                     weakErrors,
                 },
@@ -77,7 +77,7 @@ describe("toMatchScreenshotWrapped", () => {
 
         await toMatchScreenshotWrapped_(locator, "snapshot", { isNot: true });
 
-        expect(handlers.handleMatchingNegated).toBeCalledWith({ weakErrors, stopOnImageDiff: true });
+        expect(handlers.handleMatchingNegated).toBeCalledWith({ weakErrors, stopOnFirstImageDiff: false });
     });
 
     it("should handle different negated", async () => {
@@ -169,7 +169,7 @@ describe("toMatchScreenshotWrapped", () => {
         expect(handlers.handleDifferent).toBeCalledWith({
             testInfo: expect.objectContaining(testInfo),
             weakErrors,
-            stopOnImageDiff: true,
+            stopOnFirstImageDiff: false,
             actualBuffer: "actual-buffer",
             expectedBuffer: "expected-buffer",
             diffBuffer: "diff-buffer",
