@@ -3,11 +3,14 @@ import colors from "colors";
 import handlers from "./handlers";
 import fsUtils from "./utils/fs";
 import type { WeakErrors } from "../../fixtures";
+import type { MatcherResult } from "./types";
 
 jest.mock("./utils/fs", () => ({
     addSuffixToFilePath: jest.fn().mockImplementation((path: string, suffix: string) => `${path}-${suffix}`),
     writeFile: jest.fn(),
 }));
+
+type HandleDifferent_ = (args?: Partial<Parameters<typeof handlers.handleDifferent>[0]>) => Promise<MatcherResult>;
 
 describe("handlers", () => {
     let testInfo: TestInfo;
@@ -45,17 +48,32 @@ describe("handlers", () => {
         expect(result.message()).toBe("");
     });
 
-    it("handleMatchingNegated", () => {
-        const result = handlers.handleMatchingNegated();
+    describe("handleMatchingNegated", () => {
+        it("should pass if stopOnFirstImageDiff is 'true'", () => {
+            const result = handlers.handleMatchingNegated({ weakErrors, stopOnFirstImageDiff: true });
 
-        expect(result.pass).toBe(true);
-        expect(result.message()).toBe(
-            [
+            const expectedMessage = [
                 colors.red("Screenshot comparison failed:"),
                 "",
                 "  Expected result should be different from the actual one.",
-            ].join("\n"),
-        );
+            ].join("\n");
+            expect(weakErrors.addError).not.toBeCalled();
+            expect(result.pass).toBe(true);
+            expect(result.message()).toBe(expectedMessage);
+        });
+
+        it("should fail if stopOnFirstImageDiff is 'false'", () => {
+            const result = handlers.handleMatchingNegated({ weakErrors, stopOnFirstImageDiff: false });
+
+            const errorMessage = [
+                colors.red("Screenshot comparison failed:"),
+                "",
+                "  Expected result should be different from the actual one.",
+            ].join("\n");
+            expect(weakErrors.addError).toBeCalledWith(new Error(errorMessage));
+            expect(result.pass).toBe(false);
+            expect(result.message()).toBe("");
+        });
     });
 
     it("handleNotExists", () => {
@@ -151,32 +169,75 @@ describe("handlers", () => {
         expect(result.message()).toBe("snapshot-path running with --update-snapshots, writing actual.");
     });
 
-    it("handleDifferent", async () => {
-        const result = await handlers.handleDifferent({
-            testInfo,
-            actualBuffer: Buffer.from("actual-buffer"),
-            expectedBuffer: Buffer.from("expected-buffer"),
-            diffBuffer: Buffer.from("diff-buffer"),
-            snapshotName: "snapshot-name",
-            expectedPath: "expected-path",
-            actualPath: "actual-path",
-            diffPath: "diff-path",
+    describe("handleDifferent", () => {
+        const handleDifferent_: HandleDifferent_ = (args = {}) =>
+            handlers.handleDifferent({
+                testInfo,
+                weakErrors,
+                stopOnFirstImageDiff: false,
+                actualBuffer: Buffer.from("actual-buffer"),
+                expectedBuffer: Buffer.from("expected-buffer"),
+                diffBuffer: Buffer.from("diff-buffer"),
+                snapshotName: "snapshot-name",
+                expectedPath: "expected-path",
+                actualPath: "actual-path",
+                diffPath: "diff-path",
+                ...args,
+            });
+
+        describe("should save expected/actual/diff images", () => {
+            [true, false].forEach(stopOnFirstImageDiff => {
+                it(`if stopOnFirstImageDiff is '${stopOnFirstImageDiff}'`, async () => {
+                    await handleDifferent_({
+                        weakErrors,
+                        stopOnFirstImageDiff,
+                        actualBuffer: Buffer.from("actual-buffer"),
+                        expectedBuffer: Buffer.from("expected-buffer"),
+                        diffBuffer: Buffer.from("diff-buffer"),
+                        snapshotName: "snapshot-name",
+                        expectedPath: "expected-path",
+                        actualPath: "actual-path",
+                        diffPath: "diff-path",
+                    });
+
+                    expect(fsUtils.writeFile).toBeCalledWith("expected-path", Buffer.from("expected-buffer"));
+                    expect(fsUtils.writeFile).toBeCalledWith("actual-path", Buffer.from("actual-buffer"));
+                    expect(fsUtils.writeFile).toBeCalledWith("diff-path", Buffer.from("diff-buffer"));
+                });
+            });
         });
 
-        expect(fsUtils.writeFile).toBeCalledWith("expected-path", Buffer.from("expected-buffer"));
-        expect(fsUtils.writeFile).toBeCalledWith("actual-path", Buffer.from("actual-buffer"));
-        expect(fsUtils.writeFile).toBeCalledWith("diff-path", Buffer.from("diff-buffer"));
+        it("should fail if stopOnFirstImageDiff is 'true'", async () => {
+            const result = await handleDifferent_({ stopOnFirstImageDiff: true });
 
-        expect(result.pass).toBe(false);
-        expect(result.message()).toBe(
-            [
+            const expectedMessage = [
                 colors.red("Screenshot comparison failed"),
                 "",
                 `Expected: ${colors.yellow("expected-path")}`,
                 `Received: ${colors.yellow("actual-path")}`,
                 `    Diff: ${colors.yellow("diff-path")}`,
-            ].join("\n"),
-        );
+            ].join("\n");
+
+            expect(weakErrors.addError).not.toBeCalled();
+            expect(result.pass).toBe(false);
+            expect(result.message()).toBe(expectedMessage);
+        });
+
+        it("should pass if stopOnFirstImageDiff is 'false'", async () => {
+            const result = await handleDifferent_({ stopOnFirstImageDiff: false });
+
+            const errorMessage = [
+                colors.red("Screenshot comparison failed"),
+                "",
+                `Expected: ${colors.yellow("expected-path")}`,
+                `Received: ${colors.yellow("actual-path")}`,
+                `    Diff: ${colors.yellow("diff-path")}`,
+            ].join("\n");
+
+            expect(weakErrors.addError).toBeCalledWith(new Error(errorMessage));
+            expect(result.pass).toBe(true);
+            expect(result.message()).toBe("");
+        });
     });
 
     it("handleMatching", () => {

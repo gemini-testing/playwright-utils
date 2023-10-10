@@ -3,19 +3,23 @@ import type { PageScreenshotOptions as ScreenshotOpts } from "@playwright/test";
 import type { LooksSameOptions } from "looks-same";
 import type { LocatorLike } from "../types";
 
-type IgnoreDiffPixels = { maxDiffPixelRatio: number; maxDiffPixels: number };
-
 export type UserScreenshotOptions = Pick<
     ScreenshotOpts,
     "animations" | "caret" | "maskColor" | "scale" | "timeout" | "fullPage"
 > & { mask?: Array<LocatorLike> };
 
-export type UserCompareOptions = Pick<LooksSameOptions, "tolerance" | "antialiasingTolerance"> & IgnoreDiffPixels;
-
 type LooksSameCompareOptions = LooksSameOptions & { createDiffImage: true };
-type CompareOpts = LooksSameCompareOptions & IgnoreDiffPixels;
+type IgnoreDiffPixels = { maxDiffPixelRatio: number; maxDiffPixels: number };
+type CompareOpts = LooksSameCompareOptions & IgnoreDiffPixels & { stopOnFirstImageDiff: boolean };
 
-export type Options = UserScreenshotOptions & UserCompareOptions & IgnoreDiffPixels;
+export type UserCompareOptions = Partial<
+    Pick<
+        CompareOpts,
+        "tolerance" | "antialiasingTolerance" | "maxDiffPixels" | "maxDiffPixelRatio" | "stopOnFirstImageDiff"
+    >
+>;
+
+export type Options = UserScreenshotOptions & UserCompareOptions;
 export type PreparedOptions = {
     screenshotOpts: ScreenshotOpts;
     compareOpts: CompareOpts;
@@ -27,6 +31,7 @@ export const defaultOptions: Options = {
     antialiasingTolerance: 4,
     maxDiffPixels: 0,
     maxDiffPixelRatio: 0,
+    stopOnFirstImageDiff: false,
 
     // Screenshot options
     animations: "disabled",
@@ -47,6 +52,7 @@ export const getOptions = (
         "antialiasingTolerance",
         "maxDiffPixels",
         "maxDiffPixelRatio",
+        "stopOnFirstImageDiff",
     ];
 
     const userScreenshotOptionNames: Array<keyof UserScreenshotOptions> = [

@@ -44,7 +44,7 @@ export { test, expect };
 
 ```typescript
 // playwright.config.ts
-import { defineConfig, type PlaywrightTestOptions } from '@playwright/test';
+import { defineConfig, type PlaywrightTestOptions } from "@playwright/test";
 import type { PlaywrightUtilsOptions } from "@gemini-testing/playwright-utils";
 
 export default defineConfig<PlaywrightTestOptions, PlaywrightUtilsOptions>({
@@ -57,6 +57,7 @@ export default defineConfig<PlaywrightTestOptions, PlaywrightUtilsOptions>({
             antialiasingTolerance: 4,
             maxDiffPixels: 0,
             maxDiffPixelRatio: 0,
+            stopOnFirstImageDiff: false,
             animations: "disabled",
             caret: "hide",
             maskColor: "#FF00FF",
@@ -71,7 +72,7 @@ export default defineConfig<PlaywrightTestOptions, PlaywrightUtilsOptions>({
 Usage:
 
 ```typescript
-await expect(page.locator('body')).toMatchScreenshot('plain', {
+await expect(page.locator("body")).toMatchScreenshot("plain", {
     // Comparison options, have higher priority than project options
     maxDiffPixels: 3
 });
@@ -84,6 +85,7 @@ Args:
   - [antialiasingTolerance][looks-same-antialiasing-tolerance]: `number`
   - [maxDiffPixels][pwt-max-diff-pixels]: `number`
   - [maxDiffPixelRatio][pwt-max-diff-pixels-ratio]: `number`
+  - [stopOnFirstImageDiff]: `boolean` - Stop test execution immediately after image comparison error
   - [animations][pwt-animations]: `"disabled" | "allow"`
   - [caret][pwt-caret]: `"hide" | "initial"`
   - [maskColor][pwt-mask-color]: `string`
@@ -95,6 +97,8 @@ Args:
 
 - If you have `toHaveScreenshot` calls without specified `name`, it is required to name them.
 - Move contents of your `toHaveScreenshot` options from `expect` section of playwright config to `toMatchScreenshot` at `use` section of playwright config, then remove `threshold` property (`toMatchScreenshot` uses `tolerance` instead. Preferred value is 2.3).
+
+**Note**: Screenshot comparison errors, caused by `toMatchScreenshot`, won't stop test execution by default. You can configure it with `stopOnFirstImageDiff` option.
 
 [pwt]: https://playwright.dev/
 [looks-same]: https://github.com/gemini-testing/looks-same
