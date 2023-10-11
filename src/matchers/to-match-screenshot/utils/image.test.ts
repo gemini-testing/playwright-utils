@@ -24,9 +24,17 @@ describe("utils/image", () => {
         it("get screenshot snapshot path", () => {
             const testInfoStub = { snapshotPath: (path: string): string => `snapshot/${path}` } as TestInfo;
 
-            const result = imageUtils.getScreenshotSnapshotPath(testInfoStub, "snapshot name");
+            const result = imageUtils.getScreenshotSnapshotPath(testInfoStub, "name");
 
-            expect(result).toBe("snapshot/snapshot-name.png");
+            expect(result).toBe("snapshot/name.png");
+        });
+
+        it("should sanitize snapshot path", () => {
+            const testInfoStub = { snapshotPath: (path: string): string => `snapshot/${path}` } as TestInfo;
+
+            const result = imageUtils.getScreenshotSnapshotPath(testInfoStub, "snap.shot, \\name/foo@:bar");
+
+            expect(result).toBe("snapshot/snap-shot-name-foo-bar.png");
         });
 
         [
@@ -36,13 +44,24 @@ describe("utils/image", () => {
         ].forEach(({ fn, suffix }) => {
             it(`should get screenshot ${suffix} path`, () => {
                 const testInfoStub = {
+                    outputDir: "output/dir",
+                    titlePath: ["file", "title"],
+                } as TestInfo;
+
+                const result = fn(testInfoStub, "name");
+
+                expect(result).toBe(`output/dir/title-name-${suffix}.png`);
+            });
+
+            it(`should sanitize screenshot ${suffix} path`, () => {
+                const testInfoStub = {
                     outputDir: "output/dif",
                     titlePath: ["file", "full", "title"],
                 } as TestInfo;
 
-                const result = fn(testInfoStub, "snapshot name");
+                const result = fn(testInfoStub, "snap.shot, \\name/foo@:bar");
 
-                expect(result).toBe(`output/dif/full-title-snapshot-name-${suffix}.png`);
+                expect(result).toBe(`output/dif/full-title-snap-shot-name-foo-bar-${suffix}.png`);
             });
         });
     });

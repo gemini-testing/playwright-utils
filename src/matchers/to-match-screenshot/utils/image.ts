@@ -38,6 +38,10 @@ export const createExpectedAttachment = (snapshotName: string, expectedPath: str
 export const createDiffAttachment = (snapshotName: string, diffPath: string): Attachment =>
     createAttachment(addSuffixToFilePath(snapshotName, "diff"), diffPath);
 
+// Replacing the same characters that playwright does
+const sanitizeForFilePath = (str: string): string =>
+    str.replace(/[\x00-\x2C\x2E-\x2F\x3A-\x40\x5B-\x60\x7B-\x7F]+/g, "-"); // eslint-disable-line no-control-regex
+
 const createImageFileName = ({
     snapshotName,
     fullTitle,
@@ -45,9 +49,10 @@ const createImageFileName = ({
     delimeter = "-",
     ext = "png",
 }: AttachmentFileNameArgs): string => {
-    const fileName = [fullTitle, snapshotName, suffix].filter(Boolean).join(delimeter).replace(/ /g, "-");
+    const fileName = [fullTitle, snapshotName, suffix].filter(Boolean).join(delimeter);
+    const sanitizedFileName = sanitizeForFilePath(fileName);
 
-    return fileName.endsWith("." + ext) ? fileName : fileName + "." + ext;
+    return sanitizedFileName.endsWith("." + ext) ? sanitizedFileName : sanitizedFileName + "." + ext;
 };
 
 const getScreenshotPath = ({ outputDir, fullTitle, snapshotName, suffix }: ScreenshotPathArgs): string =>
