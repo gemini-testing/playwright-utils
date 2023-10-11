@@ -51,7 +51,7 @@ export async function toMatchScreenshotWrapped(
         const looksSameResult = await looksSame(actualBuffer, snapshotPath, looksSameOpts);
 
         return areSame(looksSameResult, maxDiffPixels, maxDiffPixelRatio)
-            ? handlers.handleMatchingNegated({ weakErrors, stopOnFirstImageDiff })
+            ? handlers.handleMatchingNegated({ snapshotName, weakErrors, stopOnFirstImageDiff })
             : handlers.handleDifferentNegated();
     }
 
@@ -95,5 +95,6 @@ export async function toMatchScreenshotWrapped(
         expectedPath,
         actualPath,
         diffPath,
+        diffClusters: looksSameResult.diffClusters,
     });
 }

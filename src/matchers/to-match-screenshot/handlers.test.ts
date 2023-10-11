@@ -4,6 +4,7 @@ import handlers from "./handlers";
 import fsUtils from "./utils/fs";
 import type { WeakErrors } from "../../fixtures";
 import type { MatcherResult } from "./types";
+import { UtilsExtendedError } from "../../utils/extended-error";
 
 jest.mock("./utils/fs", () => ({
     addSuffixToFilePath: jest.fn().mockImplementation((path: string, suffix: string) => `${path}-${suffix}`),
@@ -50,7 +51,11 @@ describe("handlers", () => {
 
     describe("handleMatchingNegated", () => {
         it("should pass if stopOnFirstImageDiff is 'true'", () => {
-            const result = handlers.handleMatchingNegated({ weakErrors, stopOnFirstImageDiff: true });
+            const result = handlers.handleMatchingNegated({
+                snapshotName: "snapshot-name",
+                weakErrors,
+                stopOnFirstImageDiff: true,
+            });
 
             const expectedMessage = [
                 colors.red("Screenshot comparison failed:"),
@@ -63,7 +68,11 @@ describe("handlers", () => {
         });
 
         it("should fail if stopOnFirstImageDiff is 'false'", () => {
-            const result = handlers.handleMatchingNegated({ weakErrors, stopOnFirstImageDiff: false });
+            const result = handlers.handleMatchingNegated({
+                snapshotName: "snapshot-name",
+                weakErrors,
+                stopOnFirstImageDiff: false,
+            });
 
             const errorMessage = [
                 colors.red("Screenshot comparison failed:"),
@@ -95,11 +104,15 @@ describe("handlers", () => {
                 actualBuffer: Buffer.from("actual-buffer"),
             });
 
+            const errorMessage = "A snapshot doesn't exist at snapshot-path, writing actual.";
+            const weakError = new UtilsExtendedError(errorMessage, {
+                type: "NoRefImageError",
+                snapshotName: "snapshot-name",
+            });
+
             expect(result.pass).toBe(true);
             expect(result.message()).toBe("");
-            expect(weakErrors.addError).toBeCalledWith(
-                new Error("A snapshot doesn't exist at snapshot-path, writing actual."),
-            );
+            expect(weakErrors.addError).toBeCalledWith(weakError);
         });
 
         it("should write files if updateSnapshots is 'missing'", async () => {
@@ -182,6 +195,7 @@ describe("handlers", () => {
                 expectedPath: "expected-path",
                 actualPath: "actual-path",
                 diffPath: "diff-path",
+                diffClusters: [],
                 ...args,
             });
 
