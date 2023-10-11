@@ -36,7 +36,7 @@
     "dependencies": {
         "colors": "1.4.0",
         "lodash": "^4.17.21",
-        "looks-same": "8.2.3"
+        "looks-same": "^8.2.4"
     },
     "devDependencies": {
         "@playwright/test": "1.36.1",
