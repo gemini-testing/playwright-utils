@@ -1,10 +1,10 @@
 import looksSame from "looks-same";
-import type { Locator, Page, TestInfo } from "@playwright/test";
+import type { TestInfo } from "@playwright/test";
 import type { ExpectThis, MatcherResult } from "./types";
 import type { WeakErrors } from "../../fixtures";
 import handlers from "./handlers";
 import fsUtils from "./utils/fs";
-import { PreparedOptions } from "./options";
+import { CompareOpts } from "./options";
 import {
     getScreenshotSnapshotPath,
     getScreenshotActualPath,
@@ -13,9 +13,9 @@ import {
 } from "./utils/image";
 
 type ToMatchScreenshotWrappedArgs = {
-    target: Page | Locator;
+    actualBuffer: Buffer;
     snapshotName: string;
-    opts: PreparedOptions;
+    compareOpts: CompareOpts;
     testInfo: TestInfo;
     weakErrors: WeakErrors;
 };
@@ -28,7 +28,7 @@ const areSame = (
 
 export async function toMatchScreenshotWrapped(
     this: ExpectThis,
-    { target, snapshotName, opts, testInfo, weakErrors }: ToMatchScreenshotWrappedArgs,
+    { actualBuffer, snapshotName, compareOpts, testInfo, weakErrors }: ToMatchScreenshotWrappedArgs,
 ): Promise<MatcherResult> {
     const isUpdateSnapshotsMissing = testInfo.config.updateSnapshots === "missing";
     const willBeRetried = testInfo.retry < testInfo.project.retries;
@@ -39,8 +39,8 @@ export async function toMatchScreenshotWrapped(
     const expectedPath = getScreenshotExpectedPath(testInfo, snapshotName);
     const diffPath = getScreenshotDiffPath(testInfo, snapshotName);
 
-    const { screenshotOpts, compareOpts } = opts;
     const { maxDiffPixels, maxDiffPixelRatio, stopOnFirstImageDiff, ...looksSameOpts } = compareOpts;
+
     const hasSnapshot = await fsUtils.exists(snapshotPath);
 
     if (this.isNot) {
@@ -48,8 +48,7 @@ export async function toMatchScreenshotWrapped(
             return handlers.handleMissingNegated({ updateSnapshots, snapshotPath });
         }
 
-        const actual = await target.screenshot(screenshotOpts);
-        const looksSameResult = await looksSame(actual, snapshotPath, looksSameOpts);
+        const looksSameResult = await looksSame(actualBuffer, snapshotPath, looksSameOpts);
 
         return areSame(looksSameResult, maxDiffPixels, maxDiffPixelRatio)
             ? handlers.handleMatchingNegated({ weakErrors, stopOnFirstImageDiff })
@@ -61,8 +60,6 @@ export async function toMatchScreenshotWrapped(
     }
 
     if (!hasSnapshot) {
-        const actualBuffer = await target.screenshot(screenshotOpts);
-
         return handlers.handleMissing({
             updateSnapshots,
             testInfo,
@@ -74,7 +71,6 @@ export async function toMatchScreenshotWrapped(
         });
     }
 
-    const actualBuffer = await target.screenshot(screenshotOpts);
     const expectedBuffer = await fsUtils.readFile(snapshotPath);
     const looksSameResult = await looksSame(actualBuffer, expectedBuffer, compareOpts);
 

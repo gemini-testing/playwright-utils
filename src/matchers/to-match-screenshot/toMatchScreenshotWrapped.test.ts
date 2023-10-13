@@ -1,6 +1,6 @@
 import { when } from "jest-when";
-import type { Locator, TestInfo } from "@playwright/test";
-import type { PreparedOptions } from "./options";
+import type { TestInfo } from "@playwright/test";
+import type { CompareOpts } from "./options";
 import type { MatcherResult } from "./types";
 import type { WeakErrors } from "../../fixtures";
 import { toMatchScreenshotWrapped } from "./toMatchScreenshotWrapped";
@@ -16,7 +16,7 @@ jest.mock("./utils/fs");
 jest.mock("./handlers");
 
 type ToMatchScreenshotWrapped_ = (
-    locator: Locator,
+    actualBuffer: Buffer,
     snapshotName: string,
     opts?: {
         isNot?: boolean;
@@ -26,11 +26,11 @@ type ToMatchScreenshotWrapped_ = (
 ) => Promise<MatcherResult> | MatcherResult;
 
 describe("toMatchScreenshotWrapped", () => {
-    let locator: Locator, weakErrors: WeakErrors, defaultTestInfo: TestInfo;
+    let actualBuffer: Buffer, weakErrors: WeakErrors, defaultTestInfo: TestInfo;
     let toMatchScreenshotWrapped_: ToMatchScreenshotWrapped_;
 
     beforeEach(() => {
-        locator = { screenshot: jest.fn().mockResolvedValue("actual-buffer") } as unknown as Locator;
+        actualBuffer = Buffer.from("actual-buffer");
         weakErrors = { addError: jest.fn() } as unknown as WeakErrors;
         defaultTestInfo = {
             titlePath: ["fileName", "suite", "testName"],
@@ -39,16 +39,16 @@ describe("toMatchScreenshotWrapped", () => {
             outputDir: "output-dir",
         } as unknown as TestInfo;
         toMatchScreenshotWrapped_ = (
-            locator: Locator,
+            actualBuffer: Buffer,
             snapshotName = "snapshot",
             { isNot = false, stopOnFirstImageDiff = false, testInfo = {} } = { isNot: false, testInfo: {} },
         ): Promise<MatcherResult> | MatcherResult => {
             return toMatchScreenshotWrapped.call(
                 { isNot },
                 {
-                    target: locator,
+                    actualBuffer,
                     snapshotName,
-                    opts: { compareOpts: { stopOnFirstImageDiff } } as PreparedOptions,
+                    compareOpts: { stopOnFirstImageDiff } as CompareOpts,
                     testInfo: { ...defaultTestInfo, ...testInfo },
                     weakErrors,
                 },
@@ -60,7 +60,7 @@ describe("toMatchScreenshotWrapped", () => {
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(false);
         jest.mocked(imageUtils.getScreenshotSnapshotPath).mockReturnValue("snap-path");
 
-        await toMatchScreenshotWrapped_(locator, "snapshot-not-exists", {
+        await toMatchScreenshotWrapped_(actualBuffer, "snapshot-not-exists", {
             isNot: true,
             testInfo: {
                 config: { updateSnapshots: "none" },
@@ -68,14 +68,13 @@ describe("toMatchScreenshotWrapped", () => {
         });
 
         expect(handlers.handleMissingNegated).toBeCalledWith({ updateSnapshots: "none", snapshotPath: "snap-path" });
-        expect(locator.screenshot).not.toBeCalled();
     });
 
     it("should handle matching negated", async () => {
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(true);
         jest.mocked(looksSame).mockResolvedValue({ equal: true } as unknown as ReturnType<typeof looksSame>);
 
-        await toMatchScreenshotWrapped_(locator, "snapshot", { isNot: true });
+        await toMatchScreenshotWrapped_(actualBuffer, "snapshot", { isNot: true });
 
         expect(handlers.handleMatchingNegated).toBeCalledWith({ weakErrors, stopOnFirstImageDiff: false });
     });
@@ -84,7 +83,7 @@ describe("toMatchScreenshotWrapped", () => {
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(true);
         jest.mocked(looksSame).mockResolvedValue({ equal: false } as unknown as ReturnType<typeof looksSame>);
 
-        await toMatchScreenshotWrapped_(locator, "snapshot", { isNot: true });
+        await toMatchScreenshotWrapped_(actualBuffer, "snapshot", { isNot: true });
 
         expect(handlers.handleDifferentNegated).toBeCalled();
     });
@@ -93,7 +92,7 @@ describe("toMatchScreenshotWrapped", () => {
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(false);
         jest.mocked(imageUtils.getScreenshotSnapshotPath).mockReturnValue("snap-path");
 
-        await toMatchScreenshotWrapped_(locator, "snapshot", {
+        await toMatchScreenshotWrapped_(actualBuffer, "snapshot", {
             testInfo: {
                 config: { updateSnapshots: "none" },
             },
@@ -110,7 +109,7 @@ describe("toMatchScreenshotWrapped", () => {
             config: { updateSnapshots: "missing" },
         };
 
-        await toMatchScreenshotWrapped_(locator, "snapshot", { testInfo });
+        await toMatchScreenshotWrapped_(actualBuffer, "snapshot", { testInfo });
 
         expect(handlers.handleMissing).toBeCalledWith({
             updateSnapshots: "missing",
@@ -119,7 +118,7 @@ describe("toMatchScreenshotWrapped", () => {
             snapshotName: "snapshot",
             snapshotPath: "snapshot-path",
             actualPath: "actual-path",
-            actualBuffer: "actual-buffer",
+            actualBuffer: Buffer.from("actual-buffer"),
         });
     });
 
@@ -127,7 +126,7 @@ describe("toMatchScreenshotWrapped", () => {
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(true);
         jest.mocked(looksSame).mockResolvedValue({ equal: true } as unknown as ReturnType<typeof looksSame>);
 
-        await toMatchScreenshotWrapped_(locator, "snapshot");
+        await toMatchScreenshotWrapped_(actualBuffer, "snapshot");
 
         expect(handlers.handleMatching).toBeCalled();
     });
@@ -138,7 +137,7 @@ describe("toMatchScreenshotWrapped", () => {
         jest.mocked(imageUtils.getScreenshotSnapshotPath).mockReturnValue("snapshot-path");
         jest.mocked(imageUtils.getScreenshotActualPath).mockReturnValue("actual-path");
 
-        await toMatchScreenshotWrapped_(locator, "snapshot", {
+        await toMatchScreenshotWrapped_(actualBuffer, "snapshot", {
             testInfo: {
                 config: { updateSnapshots: "all" },
             },
@@ -148,7 +147,7 @@ describe("toMatchScreenshotWrapped", () => {
     });
 
     it("should handle different screenshots", async () => {
-        when(fsUtils.readFile).calledWith("snapshot-path").mockResolvedValue("expected-buffer");
+        when(fsUtils.readFile).calledWith("snapshot-path").mockResolvedValue(Buffer.from("expected-buffer"));
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(true);
         jest.mocked(imageUtils.getScreenshotSnapshotPath).mockReturnValue("snapshot-path");
         jest.mocked(imageUtils.getScreenshotExpectedPath).mockReturnValue("expected-path");
@@ -157,22 +156,22 @@ describe("toMatchScreenshotWrapped", () => {
         jest.mocked(looksSame).mockResolvedValue({
             equal: false,
             diffImage: {
-                createBuffer: () => Promise.resolve("diff-buffer"),
+                createBuffer: () => Promise.resolve(Buffer.from("diff-buffer")),
             },
         } as unknown as ReturnType<typeof looksSame>);
         const testInfo = {
             config: { updateSnapshots: "none" },
         };
 
-        await toMatchScreenshotWrapped_(locator, "snapshot", { testInfo });
+        await toMatchScreenshotWrapped_(actualBuffer, "snapshot", { testInfo });
 
         expect(handlers.handleDifferent).toBeCalledWith({
             testInfo: expect.objectContaining(testInfo),
             weakErrors,
             stopOnFirstImageDiff: false,
-            actualBuffer: "actual-buffer",
-            expectedBuffer: "expected-buffer",
-            diffBuffer: "diff-buffer",
+            actualBuffer: Buffer.from("actual-buffer"),
+            expectedBuffer: Buffer.from("expected-buffer"),
+            diffBuffer: Buffer.from("diff-buffer"),
             snapshotName: "snapshot",
             expectedPath: "expected-path",
             actualPath: "actual-path",
