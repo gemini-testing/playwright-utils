@@ -76,7 +76,11 @@ describe("toMatchScreenshotWrapped", () => {
 
         await toMatchScreenshotWrapped_(actualBuffer, "snapshot", { isNot: true });
 
-        expect(handlers.handleMatchingNegated).toBeCalledWith({ weakErrors, stopOnFirstImageDiff: false });
+        expect(handlers.handleMatchingNegated).toBeCalledWith({
+            snapshotName: "snapshot",
+            weakErrors,
+            stopOnFirstImageDiff: false,
+        });
     });
 
     it("should handle different negated", async () => {

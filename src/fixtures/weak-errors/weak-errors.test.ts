@@ -1,3 +1,4 @@
+import type { TestInfo } from "@playwright/test";
 import WeakErrors from "./weak-errors";
 import { createLogger } from "../../utils/logger";
 
@@ -7,38 +8,67 @@ jest.mock("../../utils/logger", () => ({
 
 describe("WeakErrors", () => {
     const logger = createLogger();
+    let testInfo: { errors: Array<Error>; status?: string };
     let weakErrors: WeakErrors;
 
     beforeEach(() => {
-        weakErrors = new WeakErrors();
+        testInfo = { errors: [] };
+        weakErrors = new WeakErrors(testInfo as unknown as TestInfo);
     });
 
     describe("addError", () => {
-        it("should log an error to console", () => {
+        it("should log the error to console", () => {
             const error = new Error("some error");
 
             weakErrors.addError(error);
 
             expect(logger.error).toBeCalledWith(error);
         });
+
+        it("should add the error to test info", () => {
+            const error = Object.assign(new Error("some error"), { meta: "some meta" });
+
+            weakErrors.addError(error);
+
+            expect(testInfo.errors).toEqual([{ message: "Error: some error", meta: "some meta" }]);
+        });
     });
 
-    describe("getError", () => {
-        it("should return null if there are no errors", () => {
-            const error = weakErrors.getError();
+    describe("updateTestStatus", () => {
+        describe("should do nothing", () => {
+            ["failed", "timedOut", "interrupted"].forEach(status => {
+                it(`if test has some weak error and status is ${status}`, () => {
+                    testInfo.status = status;
+                    weakErrors.addError(new Error("some error"));
 
-            expect(error).toBeNull();
+                    weakErrors.updateTestStatus();
+
+                    expect(testInfo.status).toBe(status);
+                });
+            });
+
+            ["passed", "skipped", "failed", "timedOut", "interrupted"].forEach(status => {
+                it(`if test does not have weak errors and status is ${status}`, () => {
+                    testInfo.status = status;
+
+                    weakErrors.updateTestStatus();
+
+                    expect(testInfo.status).toBe(status);
+                });
+            });
         });
 
-        it("should combine multiple errors", () => {
-            weakErrors.addError(new Error("error 1"));
-            weakErrors.addError(new Error("error 2"));
-            weakErrors.addError(new Error("error 3"));
+        describe("should fail test", () => {
+            ["passed", "skipped"].forEach(status => {
+                it(`is test has some weak error and status is ${status}`, () => {
+                    testInfo.status = status;
+                    weakErrors.addError(new Error("some error"));
 
-            const combinedError = weakErrors.getError();
+                    weakErrors.updateTestStatus();
 
-            const expectedErrorMessage = ["error 1", "       error 2", "       error 3"].join("\n\n");
-            expect(combinedError?.message).toBe(expectedErrorMessage);
+                    expect(testInfo.status).toBe("failed");
+                });
+            });
         });
     });
 });

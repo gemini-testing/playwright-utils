@@ -9,16 +9,12 @@ type WeakErrorsFixture = TestFixture<WeakErrors, never>;
 export const weakErrorsFixture: Fixtures<WeakErrorsFixture> = {
     weakErrors: [
         // eslint-disable-next-line no-empty-pattern
-        async function ({}, use): Promise<void> {
-            const weakErrors = new WeakErrorsManager();
+        async function ({}, use, testInfo): Promise<void> {
+            const weakErrors = new WeakErrorsManager(testInfo);
 
             await use(weakErrors);
 
-            const error = weakErrors.getError();
-
-            if (error) {
-                throw error;
-            }
+            weakErrors.updateTestStatus();
         } as WeakErrorsFixture,
         { scope: "test", auto: true },
     ],

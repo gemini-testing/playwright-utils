@@ -1,12 +1,24 @@
 import colors from "colors";
 import type { TestInfo } from "@playwright/test";
 import type { MatcherResult } from "./types";
+import type { CoordBounds } from "looks-same";
 import fsUtils from "./utils/fs";
 import { createActualAttachment, createDiffAttachment, createExpectedAttachment } from "./utils/image";
 import { createLogger } from "../../utils/logger";
 import type { WeakErrors } from "../../fixtures";
+import { UtilsExtendedError } from "../../utils/extended-error";
 
 const logger = createLogger("to-match-screenshot");
+
+type NoRefImageErrorOpts = {
+    snapshotName: string;
+};
+
+type ImageDiffErrorOpts = {
+    snapshotName: string;
+    diffClusters?: CoordBounds[];
+    isNot?: boolean;
+};
 
 type UpdateSnapshotsMode = "none" | "all" | "missing";
 
@@ -16,6 +28,7 @@ type HandleMissingNegatedArgs = {
 };
 
 type HandleMatchingNegatedArgs = {
+    snapshotName: string;
     weakErrors: WeakErrors;
     stopOnFirstImageDiff: boolean;
 };
@@ -47,6 +60,29 @@ type HandleDifferentArgs = {
     expectedPath: string;
     actualPath: string;
     diffPath: string;
+    diffClusters: CoordBounds[];
+};
+
+const mkNoRefImageError = (
+    message: string,
+    { snapshotName }: NoRefImageErrorOpts,
+): UtilsExtendedError<NoRefImageErrorOpts> => {
+    return new UtilsExtendedError(message, {
+        type: "NoRefImageError",
+        snapshotName,
+    });
+};
+
+const mkImageDiffError = (
+    message: string,
+    { snapshotName, diffClusters, isNot }: ImageDiffErrorOpts,
+): UtilsExtendedError<ImageDiffErrorOpts> => {
+    return new UtilsExtendedError(message, {
+        type: "ImageDiffError",
+        snapshotName,
+        diffClusters,
+        isNot,
+    });
 };
 
 export const handleMissingNegated = ({ updateSnapshots, snapshotPath }: HandleMissingNegatedArgs): MatcherResult => {
@@ -63,11 +99,14 @@ export const handleDifferentNegated = (): MatcherResult => {
 };
 
 export const handleMatchingNegated = ({
+    snapshotName,
     stopOnFirstImageDiff,
     weakErrors,
 }: HandleMatchingNegatedArgs): MatcherResult => {
     const message = [
         colors.red("Screenshot comparison failed:"),
+        "",
+        `Snapshot: "${snapshotName}"`,
         "",
         "  Expected result should be different from the actual one.",
     ].join("\n");
@@ -76,7 +115,7 @@ export const handleMatchingNegated = ({
         return { pass: true, message: () => message };
     }
 
-    weakErrors.addError(new Error(message));
+    weakErrors.addError(mkImageDiffError(message, { snapshotName, isNot: true }));
 
     return { pass: false, message: () => "" };
 };
@@ -105,7 +144,8 @@ export const handleMissing = async ({
         testInfo.attachments.push(createActualAttachment(snapshotName, actualPath));
     }
 
-    const message = `A snapshot doesn't exist at ${snapshotPath}${isWriteMode ? ", writing actual." : "."}`;
+    const message =
+        `A snapshot "${snapshotName}" doesn't exist at ${snapshotPath}` + (isWriteMode ? ", writing actual." : ".");
 
     if (updateSnapshots === "all") {
         logger.log(message);
@@ -113,7 +153,7 @@ export const handleMissing = async ({
     }
 
     if (updateSnapshots === "missing") {
-        weakErrors.addError(new Error(message));
+        weakErrors.addError(mkNoRefImageError(message, { snapshotName }));
         return { pass: true, message: () => "" };
     }
 
@@ -145,9 +185,10 @@ export const handleDifferent = async ({
     expectedPath,
     actualPath,
     diffPath,
+    diffClusters,
 }: HandleDifferentArgs): Promise<MatcherResult> => {
     const writeFilePromises: Promise<void>[] = [];
-    const output = [colors.red("Screenshot comparison failed"), ""];
+    const output = [colors.red("Screenshot comparison failed"), "", `Snapshot: "${snapshotName}"`, ""];
 
     if (expectedBuffer) {
         writeFilePromises.push(fsUtils.writeFile(expectedPath, expectedBuffer));
@@ -173,7 +214,7 @@ export const handleDifferent = async ({
         return { pass: false, message: () => output.join("\n") };
     }
 
-    weakErrors.addError(new Error(output.join("\n")));
+    weakErrors.addError(mkImageDiffError(output.join("\n"), { snapshotName, diffClusters }));
 
     return { pass: true, message: () => "" };
 };

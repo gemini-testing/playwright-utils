@@ -1,28 +1,37 @@
+import type { TestInfo, TestInfoError } from "@playwright/test";
+import { UtilsExtendedError } from "../../utils/extended-error";
 import { createLogger } from "../../utils/logger";
 
 const logger = createLogger("weak-errors");
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ExtendedError = UtilsExtendedError<Record<string, any>>;
+
 export default class WeakErrors {
-    private errors: Error[] = [];
+    private testInfo: TestInfo;
+    private hasErrors = false;
 
-    addError(error: Error): void {
-        logger.error(error);
-
-        this.errors.push(error);
+    constructor(testInfo: TestInfo) {
+        this.testInfo = testInfo;
     }
 
-    getError(): Error | null {
-        if (this.errors.length === 0) {
-            return null;
+    addError(error: Error | ExtendedError): void {
+        logger.error(error);
+
+        const testInfoError = {
+            message: `${error.name}: ${error.message}`,
+            meta: (error as ExtendedError).meta,
+        } as TestInfoError;
+
+        this.testInfo.errors.push(testInfoError);
+        this.hasErrors = true;
+    }
+
+    updateTestStatus(): void {
+        const isTestSuccess = ["passed", "skipped"].includes(this.testInfo.status!);
+
+        if (this.hasErrors && isTestSuccess) {
+            this.testInfo.status = "failed";
         }
-
-        const offset = Error.name.length + 2;
-        const errorMessages = this.errors.map(error => error.message);
-        const errorMessage = errorMessages.join("\n\n" + " ".repeat(offset));
-
-        const error = new Error(errorMessage);
-        error.stack = this.errors[0].stack;
-
-        return error;
     }
 }
