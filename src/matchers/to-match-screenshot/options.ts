@@ -10,7 +10,7 @@ export type UserScreenshotOptions = Pick<
 
 type LooksSameCompareOptions = LooksSameOptions & { createDiffImage: true };
 type IgnoreDiffPixels = { maxDiffPixelRatio: number; maxDiffPixels: number };
-type CompareOpts = LooksSameCompareOptions & IgnoreDiffPixels & { stopOnFirstImageDiff: boolean };
+export type CompareOpts = LooksSameCompareOptions & IgnoreDiffPixels & { stopOnFirstImageDiff: boolean };
 
 export type UserCompareOptions = Partial<
     Pick<
