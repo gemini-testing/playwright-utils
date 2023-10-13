@@ -60,6 +60,8 @@ describe("handlers", () => {
             const expectedMessage = [
                 colors.red("Screenshot comparison failed:"),
                 "",
+                'Snapshot: "snapshot-name"',
+                "",
                 "  Expected result should be different from the actual one.",
             ].join("\n");
             expect(weakErrors.addError).not.toBeCalled();
@@ -76,6 +78,8 @@ describe("handlers", () => {
 
             const errorMessage = [
                 colors.red("Screenshot comparison failed:"),
+                "",
+                'Snapshot: "snapshot-name"',
                 "",
                 "  Expected result should be different from the actual one.",
             ].join("\n");
@@ -104,7 +108,7 @@ describe("handlers", () => {
                 actualBuffer: Buffer.from("actual-buffer"),
             });
 
-            const errorMessage = "A snapshot doesn't exist at snapshot-path, writing actual.";
+            const errorMessage = 'A snapshot "snapshot-name" doesn\'t exist at snapshot-path, writing actual.';
             const weakError = new UtilsExtendedError(errorMessage, {
                 type: "NoRefImageError",
                 snapshotName: "snapshot-name",
@@ -149,7 +153,7 @@ describe("handlers", () => {
             });
 
             expect(result.pass).toBe(false);
-            expect(result.message()).toBe("A snapshot doesn't exist at snapshot-path.");
+            expect(result.message()).toBe('A snapshot "snapshot-name" doesn\'t exist at snapshot-path.');
         });
 
         it("should not write files if updateSnapshots is 'none'", async () => {
@@ -227,6 +231,8 @@ describe("handlers", () => {
             const expectedMessage = [
                 colors.red("Screenshot comparison failed"),
                 "",
+                'Snapshot: "snapshot-name"',
+                "",
                 `Expected: ${colors.yellow("expected-path")}`,
                 `Received: ${colors.yellow("actual-path")}`,
                 `    Diff: ${colors.yellow("diff-path")}`,
@@ -242,6 +248,8 @@ describe("handlers", () => {
 
             const errorMessage = [
                 colors.red("Screenshot comparison failed"),
+                "",
+                'Snapshot: "snapshot-name"',
                 "",
                 `Expected: ${colors.yellow("expected-path")}`,
                 `Received: ${colors.yellow("actual-path")}`,

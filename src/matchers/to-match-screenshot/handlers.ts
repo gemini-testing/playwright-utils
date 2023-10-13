@@ -106,6 +106,8 @@ export const handleMatchingNegated = ({
     const message = [
         colors.red("Screenshot comparison failed:"),
         "",
+        `Snapshot: "${snapshotName}"`,
+        "",
         "  Expected result should be different from the actual one.",
     ].join("\n");
 
@@ -142,7 +144,8 @@ export const handleMissing = async ({
         testInfo.attachments.push(createActualAttachment(snapshotName, actualPath));
     }
 
-    const message = `A snapshot doesn't exist at ${snapshotPath}${isWriteMode ? ", writing actual." : "."}`;
+    const message =
+        `A snapshot "${snapshotName}" doesn't exist at ${snapshotPath}` + (isWriteMode ? ", writing actual." : ".");
 
     if (updateSnapshots === "all") {
         logger.log(message);
@@ -185,7 +188,7 @@ export const handleDifferent = async ({
     diffClusters,
 }: HandleDifferentArgs): Promise<MatcherResult> => {
     const writeFilePromises: Promise<void>[] = [];
-    const output = [colors.red("Screenshot comparison failed"), ""];
+    const output = [colors.red("Screenshot comparison failed"), "", `Snapshot: "${snapshotName}"`, ""];
 
     if (expectedBuffer) {
         writeFilePromises.push(fsUtils.writeFile(expectedPath, expectedBuffer));
