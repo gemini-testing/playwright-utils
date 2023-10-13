@@ -83,6 +83,8 @@ Args:
 - opts?: `Object`
   - [tolerance][looks-same-tolerance]: `number`
   - [antialiasingTolerance][looks-same-antialiasing-tolerance]: `number`
+  - [shouldCluster][looks-same-diff-clusters]: `boolean` - Used by [html-reporter][html-reporter]'s diffBubbles
+  - [clustersSize][looks-same-diff-clusters]: `number` - Used by [html-reporter][html-reporter]'s diffBubbles
   - [maxDiffPixels][pwt-max-diff-pixels]: `number`
   - [maxDiffPixelRatio][pwt-max-diff-pixels-ratio]: `number`
   - [stopOnFirstImageDiff]: `boolean` - Stop test execution immediately after image comparison error
@@ -106,6 +108,7 @@ Args:
 [yiq-ntsc]: http://www.progmat.uaem.mx:8080/artVol2Num2/Articulo3Vol2Num2.pdf
 [looks-same-tolerance]: https://github.com/gemini-testing/looks-same#comparing-images
 [looks-same-antialiasing-tolerance]: https://github.com/gemini-testing/looks-same#comparing-images-with-ignoring-antialiasing
+[looks-same-diff-clusters]: https://github.com/gemini-testing/looks-same#getting-diff-clusters
 [pwt-max-diff-pixels]: https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1-option-max-diff-pixels
 [pwt-max-diff-pixels-ratio]: https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1-option-max-diff-pixel-ratio
 [pwt-animations]: https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1-option-animations

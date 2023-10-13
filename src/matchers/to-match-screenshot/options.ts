@@ -12,12 +12,15 @@ type LooksSameCompareOptions = LooksSameOptions & { createDiffImage: true };
 type IgnoreDiffPixels = { maxDiffPixelRatio: number; maxDiffPixels: number };
 export type CompareOpts = LooksSameCompareOptions & IgnoreDiffPixels & { stopOnFirstImageDiff: boolean };
 
-export type UserCompareOptions = Partial<
-    Pick<
-        CompareOpts,
-        "tolerance" | "antialiasingTolerance" | "maxDiffPixels" | "maxDiffPixelRatio" | "stopOnFirstImageDiff"
-    >
->;
+type UserCompareOption =
+    | "tolerance"
+    | "antialiasingTolerance"
+    | "maxDiffPixels"
+    | "maxDiffPixelRatio"
+    | "stopOnFirstImageDiff"
+    | "shouldCluster"
+    | "clustersSize";
+export type UserCompareOptions = Partial<Pick<CompareOpts, UserCompareOption>>;
 
 export type Options = UserScreenshotOptions & UserCompareOptions;
 export type PreparedOptions = {
