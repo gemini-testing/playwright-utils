@@ -23,7 +23,7 @@ export const createToMatchScreenshotFixture = (expect: Expect): Fixtures<ToMatch
 
                     return toMatchScreenshotWrapped.call(this, {
                         actualBuffer,
-                        snapshotName,
+                        snapshotName: snapshotName.endsWith(".png") ? snapshotName : snapshotName + ".png",
                         compareOpts,
                         testInfo,
                         weakErrors,
