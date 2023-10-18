@@ -63,6 +63,17 @@ describe("utils/image", () => {
 
                 expect(result).toBe(`output/dif/full-title-snap-shot-name-foo-bar-${suffix}.png`);
             });
+
+            it(`should not sanitize screenshot ${suffix} extension`, () => {
+                const testInfoStub = {
+                    outputDir: "output/dir",
+                    titlePath: ["file", "title"],
+                } as TestInfo;
+
+                const result = fn(testInfoStub, "name.png");
+
+                expect(result).toBe(`output/dir/title-name-${suffix}.png`);
+            });
         });
     });
 });
