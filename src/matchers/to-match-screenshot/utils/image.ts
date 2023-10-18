@@ -47,12 +47,16 @@ const createImageFileName = ({
     fullTitle,
     suffix,
     delimeter = "-",
-    ext = "png",
+    ext = ".png",
 }: AttachmentFileNameArgs): string => {
-    const fileName = [fullTitle, snapshotName, suffix].filter(Boolean).join(delimeter);
-    const sanitizedFileName = sanitizeForFilePath(fileName);
+    const snapshotExt = path.extname(snapshotName) || ext;
+    const extLength = snapshotExt.length;
+    const snapshotBase = snapshotName.endsWith(snapshotExt) ? snapshotName.slice(0, -extLength) : snapshotName;
 
-    return sanitizedFileName.endsWith("." + ext) ? sanitizedFileName : sanitizedFileName + "." + ext;
+    const fileBase = [fullTitle, snapshotBase, suffix].filter(Boolean).join(delimeter);
+    const sanitizedFileBase = sanitizeForFilePath(fileBase);
+
+    return sanitizedFileBase + snapshotExt;
 };
 
 const getScreenshotPath = ({ outputDir, fullTitle, snapshotName, suffix }: ScreenshotPathArgs): string =>
