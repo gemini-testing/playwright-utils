@@ -13,6 +13,7 @@ describe("getOptions", () => {
             maxDiffPixels: 0,
             maxDiffPixelRatio: 0,
             stopOnFirstImageDiff: false,
+            saveImageOnScreenshotMatch: true,
         };
         screenshotOpts = {
             animations: "disabled",

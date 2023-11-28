@@ -262,10 +262,52 @@ describe("handlers", () => {
         });
     });
 
-    it("handleMatching", () => {
-        const result = handlers.handleMatching();
+    describe("handleMatching", () => {
+        [true, false].forEach(saveImage => {
+            it(`should pass with empty message if saveImageOnScreenshotMatch is '${saveImage}'`, async () => {
+                const result = await handlers.handleMatching({
+                    testInfo,
+                    saveImageOnScreenshotMatch: saveImage,
+                    expectedBuffer: Buffer.from("expected-buffer"),
+                    snapshotName: "snapshot-name",
+                    expectedPath: "expected-path",
+                });
 
-        expect(result.pass).toBe(true);
-        expect(result.message()).toBe("");
+                expect(result.pass).toBe(true);
+                expect(result.message()).toBe("");
+            });
+        });
+
+        it("should save and attach actual image if saveImageOnScreenshotMatch is 'true'", async () => {
+            await handlers.handleMatching({
+                testInfo,
+                saveImageOnScreenshotMatch: true,
+                expectedBuffer: Buffer.from("expected-buffer"),
+                snapshotName: "snapshot-name",
+                expectedPath: "expected-path",
+            });
+
+            expect(fsUtils.writeFile).toBeCalledWith("expected-path", Buffer.from("expected-buffer"));
+            expect(testInfo.attachments).toEqual([
+                {
+                    contentType: "image/png",
+                    name: "snapshot-name-expected",
+                    path: "expected-path",
+                },
+            ]);
+        });
+
+        it("should not save and attach image if saveImageOnScreenshotMatch is 'false'", async () => {
+            await handlers.handleMatching({
+                testInfo,
+                saveImageOnScreenshotMatch: false,
+                expectedBuffer: Buffer.from("expected-buffer"),
+                snapshotName: "snapshot-name",
+                expectedPath: "expected-path",
+            });
+
+            expect(fsUtils.writeFile).not.toBeCalled();
+            expect(testInfo.attachments).toEqual([]);
+        });
     });
 });
