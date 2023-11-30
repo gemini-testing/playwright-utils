@@ -63,6 +63,14 @@ type HandleDifferentArgs = {
     diffClusters: CoordBounds[];
 };
 
+type HandleMatchingArgs = {
+    testInfo: TestInfo;
+    saveImageOnScreenshotMatch: boolean;
+    expectedBuffer: Uint8Array;
+    snapshotName: string;
+    expectedPath: string;
+};
+
 const mkNoRefImageError = (
     message: string,
     { snapshotName }: NoRefImageErrorOpts,
@@ -219,7 +227,18 @@ export const handleDifferent = async ({
     return { pass: true, message: () => "" };
 };
 
-export const handleMatching = (): MatcherResult => {
+export const handleMatching = async ({
+    testInfo,
+    saveImageOnScreenshotMatch,
+    expectedBuffer,
+    snapshotName,
+    expectedPath,
+}: HandleMatchingArgs): Promise<MatcherResult> => {
+    if (saveImageOnScreenshotMatch) {
+        await fsUtils.writeFile(expectedPath, expectedBuffer);
+        testInfo.attachments.push(createExpectedAttachment(snapshotName, expectedPath));
+    }
+
     return { pass: true, message: () => "" };
 };
 

@@ -58,6 +58,7 @@ export default defineConfig<PlaywrightTestOptions, PlaywrightUtilsOptions>({
             maxDiffPixels: 0,
             maxDiffPixelRatio: 0,
             stopOnFirstImageDiff: false,
+            saveImageOnScreenshotMatch: true,
             animations: "disabled",
             caret: "hide",
             maskColor: "#FF00FF",
@@ -88,6 +89,7 @@ Args:
   - [maxDiffPixels][pwt-max-diff-pixels]: `number`
   - [maxDiffPixelRatio][pwt-max-diff-pixels-ratio]: `number`
   - [stopOnFirstImageDiff]: `boolean` - Stop test execution immediately after image comparison error
+  - [saveImageOnScreenshotMatch]: `boolean` - Save image on image comparison success (used by reporters)
   - [animations][pwt-animations]: `"disabled" | "allow"`
   - [caret][pwt-caret]: `"hide" | "initial"`
   - [maskColor][pwt-mask-color]: `string`

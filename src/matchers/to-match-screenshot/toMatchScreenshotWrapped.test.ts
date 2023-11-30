@@ -21,6 +21,7 @@ type ToMatchScreenshotWrapped_ = (
     opts?: {
         isNot?: boolean;
         stopOnFirstImageDiff?: boolean;
+        saveImageOnScreenshotMatch?: boolean;
         testInfo?: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     },
 ) => Promise<MatcherResult> | MatcherResult;
@@ -41,14 +42,17 @@ describe("toMatchScreenshotWrapped", () => {
         toMatchScreenshotWrapped_ = (
             actualBuffer: Buffer,
             snapshotName = "snapshot",
-            { isNot = false, stopOnFirstImageDiff = false, testInfo = {} } = { isNot: false, testInfo: {} },
+            { isNot = false, stopOnFirstImageDiff = false, saveImageOnScreenshotMatch = true, testInfo = {} } = {
+                isNot: false,
+                testInfo: {},
+            },
         ): Promise<MatcherResult> | MatcherResult => {
             return toMatchScreenshotWrapped.call(
                 { isNot },
                 {
                     actualBuffer,
                     snapshotName,
-                    compareOpts: { stopOnFirstImageDiff } as CompareOpts,
+                    compareOpts: { stopOnFirstImageDiff, saveImageOnScreenshotMatch } as CompareOpts,
                     testInfo: { ...defaultTestInfo, ...testInfo },
                     weakErrors,
                 },
@@ -127,12 +131,22 @@ describe("toMatchScreenshotWrapped", () => {
     });
 
     it("should handle matching", async () => {
+        when(fsUtils.readFile).calledWith("snapshot-path").mockResolvedValue(Buffer.from("expected-buffer"));
         jest.mocked(fsUtils.exists).mockResolvedValueOnce(true);
         jest.mocked(looksSame).mockResolvedValue({ equal: true } as unknown as ReturnType<typeof looksSame>);
+        jest.mocked(imageUtils.getScreenshotExpectedPath).mockReturnValue("expected-path");
 
-        await toMatchScreenshotWrapped_(actualBuffer, "snapshot");
+        await toMatchScreenshotWrapped_(actualBuffer, "snapshot", {
+            saveImageOnScreenshotMatch: false,
+        });
 
-        expect(handlers.handleMatching).toBeCalled();
+        expect(handlers.handleMatching).toBeCalledWith({
+            testInfo: defaultTestInfo,
+            saveImageOnScreenshotMatch: false,
+            expectedBuffer: Buffer.from("expected-buffer"),
+            snapshotName: "snapshot",
+            expectedPath: "expected-path",
+        });
     });
 
     it("should handle updating snapshots", async () => {
